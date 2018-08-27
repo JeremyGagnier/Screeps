@@ -30,18 +30,13 @@ let CreepInitial =
             }
         }
         
-        function IsAdjacent(a, b, maxDist = 1)
-        {
-            return Math.abs(a.x - b.x) <= maxDist && Math.abs(a.y - b.y) <= maxDist;
-        }
-        
         if (creep.memory.me.justSpawned)
         {
             creep.memory = {me: {type: CREEP_INITIAL}};
             creep.room.memory.me.idleCreeps.push(creep.name);
         }
         
-        if (creep.ticksToLive <= 0)
+        if (creep.ticksToLive <= 1)
         {
             ReleaseJob();
             delete Memory.creeps[creep.name];
