@@ -177,15 +177,15 @@ let Initial =
     SetRepairJob: (creep, getEnergyPos, repairPos) =>
     {
         creep.memory.state = STATE_MOVE;
-        creep.memory.jobType = JOB_BUILD;
+        creep.memory.jobType = JOB_REPAIR;
         if (creep.IsEmpty())
         {
             creep.memory.targetPos = getEnergyPos;
-            creep.memory.secondaryPos = buildPos;
+            creep.memory.secondaryPos = repairPos;
         }
         else
         {
-            creep.memory.targetPos = buildPos;
+            creep.memory.targetPos = repairPos;
         }
     }
 }
