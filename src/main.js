@@ -18,13 +18,20 @@ module.exports.loop = () =>
 
     for (let creepName in Game.creeps)
     {
-        let creep = Game.creeps[creepName];
-        let prevState = creep.memory.state;
-        creep.Advance();
-        // Check if the creep became idle
-        if (prevState !== 0 && creep.memory.state === 0)
+        try
         {
-            Memory.strategy.idleCreeps.push(creepName);
+            let creep = Game.creeps[creepName];
+            let prevState = creep.memory.state;
+            creep.Advance();
+            // Check if the creep became idle
+            if (prevState !== 0 && creep.memory.state === 0)
+            {
+                Memory.strategy.idleCreeps.push(creepName);
+            }
+        }
+        catch(error)
+        {
+            console.error("Failed to advance creep: " + creepName, error);
         }
     }
 
@@ -39,5 +46,12 @@ module.exports.loop = () =>
         }
     }*/
 
-    Strategy.Advance();
+    try
+    {
+        Strategy.Advance();
+    }
+    catch(error)
+    {
+        console.error("Failed to advance strategy", error);
+    }
 }
