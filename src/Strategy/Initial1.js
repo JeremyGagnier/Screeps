@@ -60,9 +60,10 @@ let Initial1 =
                 roomIntel.spawnerPos % ROOM_SIZE,
                 ~~(roomIntel.spawnerPos / ROOM_SIZE))[0];
             
-            if (Object.keys(Game.creeps).length >= 2)
+            let has300 = spawner.energy >= 300;
+            if (Object.keys(Game.creeps).length >= 2 || has300)
             {
-                if (spawner.energy >= 300)
+                if (has300)
                 {
                     spawner.spawnCreep([WORK, WORK, CARRY, MOVE], Game.time.toString(), {memory: {new: true, type: 0}});
                 }

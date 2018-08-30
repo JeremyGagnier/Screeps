@@ -20,3 +20,14 @@ global.ResetMemory = () =>
     Intel.Initialize();
     Strategy.Initialize();
 }
+
+global.CleanCreeps = () =>
+{
+    for (let creepName in Memory.creeps)
+    {
+        if (!Game.creeps[creepName])
+        {
+            delete Memory.creeps[creepName];
+        }
+    }
+}
