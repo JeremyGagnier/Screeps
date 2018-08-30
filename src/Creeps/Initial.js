@@ -1,5 +1,5 @@
-const FiniteStateMachine = require("./../FiniteStateMachine");
-const Transition = require("./../Transition");
+const FiniteStateMachine = require("FiniteStateMachine");
+const Transition = require("Transition");
 
 const STATE_IDLE = 0;
 const STATE_MOVE = 1;
@@ -9,13 +9,75 @@ const STATE_GET_ENERGY = 4;
 const STATE_BUILD = 5;
 const STATE_REPAIR = 6;
 
+let InitialActions =
+{
+    Idle: (creep) => {},
+
+    Move: (creep) =>
+    {
+        if (creep.fatigue <= 0)
+        {
+            creep.Move();
+        }
+    },
+
+    Harvest: (creep) =>
+    {
+        creep.Harvest();
+    },
+
+    Deposit: (creep) =>
+    {
+        if (creep.Deposit() !== OK)
+        {
+            let pos = creep.room.controller.pos;
+            creep.memory.targetPos = pos.x + ROOM_SIZE * pos.y;
+            creep.memory.adjacentDist = 3;
+            creep.memory.state = STATE_MOVE;
+        }
+    },
+
+    GetEnergy: (creep) =>
+    {
+        if (creep.Withdraw() !== OK)
+        {
+            creep.memory.state = STATE_IDLE;
+        }
+    },
+
+    Build: (creep) =>
+    {
+        if (creep.Build() !== OK)
+        {
+            creep.memory.state = STATE_IDLE;
+        }
+    },
+
+    Repair: (creep) =>
+    {
+        if (creep.Repair() !== OK)
+        {
+            creep.memory.state = STATE_IDLE;
+        }
+    },
+}
+
+let Actions = [
+    InitialActions.Idle,
+    InitialActions.Move,
+    InitialActions.Harvest,
+    InitialActions.Deposit,
+    InitialActions.GetEnergy,
+    InitialActions.Build,
+    InitialActions.Repair
+];
+
 let InitialFSM;
 
 let Initial =
 {
     Setup: (creep) =>
     {
-        creep.memory.type = CREEP_INITIAL;
         creep.memory.state = STATE_IDLE;
     },
 
@@ -26,83 +88,48 @@ let Initial =
             return;
         }
 
-        creep.memory.state = InitalFSM.TryTransition(creep.memory.state, creep);
-        switch(creep.memory.state)
-        {
-            case STATE_MOVE:
-                creep.Move();
-                break;
-
-            case STATE_HARVEST:
-                if (!creep.Harvest())
-                {
-                    creep.memory.state = STATE_MOVE;
-                    creep.memory.targetPos = creep.memory.secondaryPos;
-                }
-                break;
-
-            case STATE_DEPOSIT:
-                if (!creep.Deposit())
-                {
-                    creep.memory.targetPos = creep.room.controller.pos;
-                }
-                break;
-
-            case STATE_GET_ENERGY:
-                if (!creep.Withdraw())
-                {
-                    creep.memory.state = STATE_IDLE;
-                }
-                break;
-
-            case STATE_BUILD:
-                if (!creep.Build())
-                {
-                    creep.memory.state = STATE_IDLE;
-                }
-                break;
-
-            case STATE_REPAIR:
-                if (!creep.Repair())
-                {
-                    creep.memory.state = STATE_IDLE;
-                }
-        }
+        creep.memory.state = InitialFSM.TryTransition(creep.memory.state, creep);
+        Actions[creep.memory.state](creep);
     },
 
     FromMoveToHarvest: (creep) =>
     {
-        return creep.memory.jobType === JOB_HARVEST &&
+        let shouldTransition = creep.memory.jobType === JOB_HARVEST &&
             !creep.IsFull() &&
-            IsAdjacent(creep.pos, creep.memory.targetPos, 0);
+            creep.DistanceToTarget() <= 0;
+        if (shouldTransition)
+        {
+            creep.memory.targetPos = creep.memory.sourcePos;
+        }
+        return shouldTransition;
     },
 
     FromMoveToDeposit: (creep) =>
     {
         return (creep.memory.jobType === JOB_HARVEST || creep.memory.jobType === JOB_HAUL) &&
             !creep.IsEmpty() &&
-            IsAdjacent(creep.pos, creep.memory.targetPos, creep.memory.adjacentDist);
+            creep.DistanceToTarget() <= creep.memory.adjacentDist;
     },
 
     FromMoveToGetEnergy: (creep) =>
     {
         return (creep.memory.jobType === JOB_BUILD || creep.memory.jobType === JOB_HAUL) &&
             creep.IsEmpty() &&
-            IsAdjacent(creep.pos, creep.memory.targetPos);
+            creep.DistanceToTarget() <= 1;
     },
 
     FromMoveToBuild: (creep) =>
     {
         return creep.memory.jobType === JOB_BUILD &&
             !creep.IsEmpty() &&
-            IsAdjacent(creep.pos, creep.memory.targetPos, 3);
+            creep.DistanceToTarget() <= 3;
     },
 
     FromMoveToRepair: (creep) =>
     {
         return creep.memory.jobType === JOB_REPAIR &&
             !creep.IsEmpty() &&
-            IsAdjacent(creep.pos, creep.memory.targetPos, 3);
+            creep.DistanceToTarget() <= 3;
     },
 
     FromDepositToIdle: (creep) =>
@@ -115,14 +142,19 @@ let Initial =
         let shouldTransition = creep.IsFull();
         if (shouldTransition)
         {
-            if (creep.room.lookForAt(LOOK_STRUCTURES, creep.memory.secondaryPos)[0].IsFull())
+            let pos = creep.memory.secondaryPos;
+            if (creep.room.lookForAt(LOOK_STRUCTURES, pos % ROOM_SIZE, ~~(pos / ROOM_SIZE))[0].IsFull())
             {
-                creep.memory.targetPos = creep.room.controller.pos;
+                let pos = creep.room.controller.pos;
+                creep.memory.targetPos = pos.x + ROOM_SIZE * pos.y;
+                creep.memory.adjacentDist = 3;
             }
             else
             {
-                creep.memory.targetPos = creep.memory.secondaryPos;
+                creep.memory.targetPos = pos;
+                creep.memory.adjacentDist = 1;
             }
+            delete creep.memory.sourcePos;
         }
         return shouldTransition;
     },
@@ -151,11 +183,12 @@ let Initial =
         return shouldTransition;
     },
 
-    SetHarvestJob: (creep, harvestPos, dumpPos) =>
+    SetHarvestJob: (creep, harvestPos, sourcePos, dumpPos) =>
     {
         creep.memory.state = STATE_MOVE;
         creep.memory.jobType = JOB_HARVEST;
         creep.memory.targetPos = harvestPos;
+        creep.memory.sourcePos = sourcePos;
         creep.memory.secondaryPos = dumpPos;
     },
 

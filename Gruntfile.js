@@ -7,64 +7,68 @@ module.exports = (Grunt) =>
     Grunt.loadNpmTasks('grunt-contrib-clean');
     Grunt.loadNpmTasks("grunt-contrib-uglify");
     Grunt.loadNpmTasks("grunt-screeps");
-    Grunt.initConfig(
-    {
-        babel:
-        {
-            options:
-            {
+    Grunt.initConfig({
+        babel: {
+            options: {
                 sourceMap: false,
                 presets: ["env"]
             },
-            dist:
-            {
-                files:
-                [
-                    {
-                        expand: true,
-                        cwd: "src",
-                        src: ["**/*.js"],
-                        dest: "dist/es5/"
-                    }
-                ]
+            deploy: {
+                files: [{
+                    expand: true,
+                    rename: (dest, src) => dest + src.replace("/", "."),
+                    cwd: "src",
+                    src: ["**/*.js"],
+                    dest: "dist/es5/"
+                }]
+            },
+            stage: {
+                files: [{
+                    expand: true,
+                    rename: (dest, src) => dest + src.replace("/", "."),
+                    cwd: "src",
+                    src: ["**/*.js"],
+                    dest: "dist/exe/"
+                }]
             }
         },
-        clean:
-        {
+        clean: {
             contents: ["dist/*"]
         },
-        screeps:
-        {
-            options:
-            {
-                email: secrets.email,
-                password: secrets.password,
-                branch: "default",
-                ptr: false
+        screeps: {
+            deploy: {
+                options: {
+                    email: secrets.email,
+                    password: secrets.password,
+                    branch: "production",
+                    ptr: false
+                },
+                src: ["dist/exe/*.js"]
             },
-            dist:
-            {
-                src: ["dist/uglify/*.js"]
+            stage: {
+                options: {
+                    email: secrets.email,
+                    password: secrets.password,
+                    branch: "staging",
+                    ptr: false
+                },
+                src: ["dist/exe/*.js"]
             }
         },
-        uglify:
-        {
+        uglify: {
             mangle: {},
             compress: {},
-            my_target:
-            {
-                files:
-                [
-                    {
-                        expand: true,
-                        cwd: "dist/es5",
-                        src: ["**/*.js"],
-                        dest: "dist/uglify/"
-                    }
-                ]
+            my_target: {
+                files: [{
+                    expand: true,
+                    cwd: "dist/es5",
+                    src: ["**/*.js"],
+                    dest: "dist/exe/"
+                }]
             }
         }
     });
 
-    Grunt.registerTask("upload", ["clean", "babel", "uglify", "screeps"])
+    Grunt.registerTask("deploy", ["clean", "babel:deploy", "uglify", "screeps:deploy"]);
+    Grunt.registerTask("stage", ["clean", "babel:stage", "screeps:stage"]);
 }

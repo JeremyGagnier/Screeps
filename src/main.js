@@ -1,60 +1,43 @@
-const CreepInitial = require("CreepInitial");
-const FirstStageStrategy = require("FirstStageStrategy");
-const JobFinder = require("JobFinder");
+require("Constants");
+require("Extends.Creep");
+require("Extends.StructureSpawn");
+require("Util");
 
-// Job type enum
-global.JOB_HARVEST = 0;
-global.JOB_HAUL = 1;
-global.JOB_BUILD = 2;
-global.JOB_REPAIR = 3;
+const Intel = require("Intel");
+const Strategy = require("Strategy.Strategy");
 
-// Creep type enum
-global.CREEP_INITIAL = 0;
-global.CREEP_MINER = 1;
-global.CREEP_HAULER = 2;
-global.CREEP_BUILDER = 3;
-global.CREEP_REFILLER = 4;
-
-global.IsAdjacent = (pos1, pos2, maxDist = 1) =>
-{
-    return pos1.room === pos2.room && Math.abs(pos1.x - pos2.x) <= maxDist && Math.abs(pos1.y - pos2.y) <= maxDist;
-}
+const ROOM_SCAN_FREQUENCY = 60;
 
 module.exports.loop = () =>
 {
-    for (let roomName in Game.rooms)
+    if (!Memory.strategy)
     {
-        let room = Game.rooms[roomName];
-        if (!room.controller || !room.controller.my)
-        {
-            continue;
-        }
-        
-        if (!room.memory.me)
-        {
-            JobFinder.FindJobs(roomName);
-        }
-        else
-        {
-            FirstStageStrategy.Advance(roomName);
-        }
+        Intel.Initialize();
+        Strategy.Initialize();
     }
-    
+
     for (let creepName in Game.creeps)
     {
         let creep = Game.creeps[creepName];
-        if (creep.spawning)
+        let prevState = creep.memory.state;
+        creep.Advance();
+        // Check if the creep became idle
+        if (prevState !== 0 && creep.memory.state === 0)
         {
-            continue;
-        }
-        
-        if (creep.memory.me.type === CREEP_INITIAL)
-        {
-            CreepInitial.Advance(creep);
-        }
-        else
-        {
-            console.log("Creep type " + creep.type.toString() + " not implemented");
+            Memory.strategy.idleCreeps.push(creepName);
         }
     }
-};
+
+    /*if ((Game.time % ROOM_SCAN_FREQUENCY) === 0)
+    {
+        for (let roomName in Game.rooms)
+        {
+            if (!Memory.intel[roomName])
+            {
+                Intel.ScanRoom(Game.rooms[roomName]);
+            }
+        }
+    }*/
+
+    Strategy.Advance();
+}
