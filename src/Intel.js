@@ -36,13 +36,26 @@ Intel =
             harvesters.push(nulls);
         }
 
+        let flags = room.find(FIND_FLAGS);
+        let extensionsPos = null;
+        for (let flagIter in flags)
+        {
+            let flag = flags[flagIter];
+            if (flag.name.includes("extension"))
+            {
+                let orientation = parseInt(flag.name.charAt(0));
+                extensionsPos = {x: flag.pos.x, y: flag.pos.y, orientation: orientation};
+            }
+        }
+
         let spawner = room.find(FIND_MY_SPAWNS)[0]
         Memory.intel[room.name] =
         {
             spawnerPos: spawner.pos.x + ROOM_SIZE * spawner.pos.y,
             sourcePositions: sourcePositions,
             harvestPositions: harvestPositions,
-            harvesters: harvesters
+            harvesters: harvesters,
+            extensionsPos: extensionsPos
         };
     }
 }

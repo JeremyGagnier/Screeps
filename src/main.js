@@ -31,20 +31,9 @@ module.exports.loop = () =>
         }
         catch(error)
         {
-            console.error("Failed to advance creep: " + creepName, error);
+            console.log("Failed to advance creep: " + creepName, error.stack);
         }
     }
-
-    /*if ((Game.time % ROOM_SCAN_FREQUENCY) === 0)
-    {
-        for (let roomName in Game.rooms)
-        {
-            if (!Memory.intel[roomName])
-            {
-                Intel.ScanRoom(Game.rooms[roomName]);
-            }
-        }
-    }*/
 
     try
     {
@@ -52,6 +41,6 @@ module.exports.loop = () =>
     }
     catch(error)
     {
-        console.error("Failed to advance strategy", error);
+        console.log("Failed to advance strategy", error.stack);
     }
 }

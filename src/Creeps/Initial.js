@@ -5,7 +5,7 @@ const STATE_IDLE = 0;
 const STATE_MOVE = 1;
 const STATE_HARVEST = 2;
 const STATE_DEPOSIT = 3;
-const STATE_GET_ENERGY = 4;
+const STATE_PLACEHOLDER = 4;
 const STATE_BUILD = 5;
 const STATE_REPAIR = 6;
 
@@ -23,23 +23,15 @@ let InitialActions =
 
     Harvest: (creep) =>
     {
-        creep.Harvest();
+        if (creep.Harvest() !== OK)
+        {
+            creep.memory.state = STATE_IDLE;
+        }
     },
 
     Deposit: (creep) =>
     {
         if (creep.Deposit() !== OK)
-        {
-            let pos = creep.room.controller.pos;
-            creep.memory.targetPos = pos.x + ROOM_SIZE * pos.y;
-            creep.memory.adjacentDist = 3;
-            creep.memory.state = STATE_MOVE;
-        }
-    },
-
-    GetEnergy: (creep) =>
-    {
-        if (creep.Withdraw() !== OK)
         {
             creep.memory.state = STATE_IDLE;
         }
@@ -67,7 +59,7 @@ let Actions = [
     InitialActions.Move,
     InitialActions.Harvest,
     InitialActions.Deposit,
-    InitialActions.GetEnergy,
+    InitialActions.Idle,
     InitialActions.Build,
     InitialActions.Repair
 ];
@@ -106,22 +98,14 @@ let Initial =
 
     FromMoveToDeposit: (creep) =>
     {
-        return (creep.memory.jobType === JOB_HARVEST || creep.memory.jobType === JOB_HAUL) &&
+        return creep.memory.jobType === JOB_HAUL &&
             !creep.IsEmpty() &&
             creep.DistanceToTarget() <= creep.memory.adjacentDist;
-    },
-
-    FromMoveToGetEnergy: (creep) =>
-    {
-        return (creep.memory.jobType === JOB_BUILD || creep.memory.jobType === JOB_HAUL) &&
-            creep.IsEmpty() &&
-            creep.DistanceToTarget() <= 1;
     },
 
     FromMoveToBuild: (creep) =>
     {
         return creep.memory.jobType === JOB_BUILD &&
-            !creep.IsEmpty() &&
             creep.DistanceToTarget() <= 3;
     },
 
@@ -137,89 +121,42 @@ let Initial =
         return creep.IsEmpty();
     },
 
-    FromHarvestToMove: (creep) =>
+    FromHarvestToIdle: (creep) =>
     {
         let shouldTransition = creep.IsFull();
         if (shouldTransition)
         {
-            let pos = creep.memory.secondaryPos;
-            if (creep.room.lookForAt(LOOK_STRUCTURES, pos % ROOM_SIZE, ~~(pos / ROOM_SIZE))[0].IsFull())
-            {
-                let pos = creep.room.controller.pos;
-                creep.memory.targetPos = pos.x + ROOM_SIZE * pos.y;
-                creep.memory.adjacentDist = 3;
-            }
-            else
-            {
-                creep.memory.targetPos = pos;
-                creep.memory.adjacentDist = 1;
-            }
             delete creep.memory.sourcePos;
         }
         return shouldTransition;
     },
 
-    FromGetEnergyToMove: (creep) =>
+    FromBuildToIdle: (creep) =>
     {
-        let shouldTransition = !creep.IsEmpty();
-        if (shouldTransition)
-        {
-            let tmp = creep.memory.targetPos;
-            creep.memory.targetPos = creep.memory.secondaryPos;
-            creep.memory.secondaryPos = tmp;
-        }
-        return shouldTransition;
+        return creep.IsEmpty();
     },
 
-    FromBuildToMove: (creep) =>
-    {
-        let shouldTransition = creep.IsEmpty();
-        if (shouldTransition)
-        {
-            let tmp = creep.memory.targetPos;
-            creep.memory.targetPos = creep.memory.secondaryPos;
-            creep.memory.secondaryPos = tmp;
-        }
-        return shouldTransition;
-    },
-
-    SetHarvestJob: (creep, harvestPos, sourcePos, dumpPos) =>
+    SetHarvestJob: (creep, harvestPos, sourcePos) =>
     {
         creep.memory.state = STATE_MOVE;
         creep.memory.jobType = JOB_HARVEST;
         creep.memory.targetPos = harvestPos;
         creep.memory.sourcePos = sourcePos;
-        creep.memory.secondaryPos = dumpPos;
     },
 
-    SetBuildJob: (creep, getEnergyPos, buildPos) =>
+    SetDepositJob: (creep, depositPos, adjactentDist = 1) =>
+    {
+        creep.memory.state = STATE_MOVE;
+        creep.memory.jobType = JOB_HAUL;
+        creep.memory.targetPos = depositPos;
+        creep.memory.adjacentDist = adjactentDist;
+    },
+
+    SetBuildJob: (creep, buildPos) =>
     {
         creep.memory.state = STATE_MOVE;
         creep.memory.jobType = JOB_BUILD;
-        if (creep.IsEmpty())
-        {
-            creep.memory.targetPos = getEnergyPos;
-            creep.memory.secondaryPos = buildPos;
-        }
-        else
-        {
-            creep.memory.targetPos = buildPos;
-        }
-    },
-
-    SetRepairJob: (creep, getEnergyPos, repairPos) =>
-    {
-        creep.memory.state = STATE_MOVE;
-        creep.memory.jobType = JOB_REPAIR;
-        if (creep.IsEmpty())
-        {
-            creep.memory.targetPos = getEnergyPos;
-            creep.memory.secondaryPos = repairPos;
-        }
-        else
-        {
-            creep.memory.targetPos = repairPos;
-        }
+        creep.memory.targetPos = buildPos;
     }
 }
 
@@ -227,17 +164,14 @@ InitialFSM = new FiniteStateMachine(
 [
     new Transition(STATE_MOVE, STATE_HARVEST, Initial.FromMoveToHarvest),
     new Transition(STATE_MOVE, STATE_DEPOSIT, Initial.FromMoveToDeposit),
-    new Transition(STATE_MOVE, STATE_GET_ENERGY, Initial.FromMoveToGetEnergy),
     new Transition(STATE_MOVE, STATE_BUILD, Initial.FromMoveToBuild),
     new Transition(STATE_MOVE, STATE_REPAIR, Initial.FromMoveToRepair),
 
     new Transition(STATE_DEPOSIT, STATE_IDLE, Initial.FromDepositToIdle),
 
-    new Transition(STATE_HARVEST, STATE_MOVE, Initial.FromHarvestToMove),
+    new Transition(STATE_HARVEST, STATE_IDLE, Initial.FromHarvestToIdle),
 
-    new Transition(STATE_GET_ENERGY, STATE_MOVE, Initial.FromGetEnergyToMove),
-
-    new Transition(STATE_BUILD, STATE_MOVE, Initial.FromBuildToMove)
+    new Transition(STATE_BUILD, STATE_IDLE, Initial.FromBuildToIdle)
 ]);
 
 module.exports = Initial;

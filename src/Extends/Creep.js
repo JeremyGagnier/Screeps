@@ -32,19 +32,19 @@ Creep.prototype.Advance = function()
     CreepTypes[this.memory.type].Advance(this);
 };
 
-Creep.prototype.SetHarvestJob = function(harvestPos, sourcePos, dumpPos)
+Creep.prototype.SetHarvestJob = function(harvestPos, sourcePos)
 {
-    CreepTypes[this.memory.type].SetHarvestJob(this, harvestPos, sourcePos, dumpPos);
+    CreepTypes[this.memory.type].SetHarvestJob(this, harvestPos, sourcePos);
+}
+
+Creep.prototype.SetDepositJob = function(depositPos, adjacentDist)
+{
+    CreepTypes[this.memory.type].SetDepositJob(this, depositPos, adjacentDist);
 }
 
 Creep.prototype.SetBuildJob = function(getEnergyPos, buildPos)
 {
     CreepTypes[this.memory.type].SetBuildJob(this, getEnergyPos, buildPos);
-}
-
-Creep.prototype.SetRepairJob = function(getEnergyPos, repairPos)
-{
-    CreepTypes[this.memory.type].SetRepairJob(this, getEnergyPos, repairPos);
 }
 
 Creep.prototype.Move = function()
@@ -77,7 +77,7 @@ Creep.prototype.Withdraw = function()
 Creep.prototype.Build = function()
 {
     let pos = this.memory.targetPos;
-    let structures = this.room.lookForAt(LOOK_STRUCTURES, pos % ROOM_SIZE, ~~(pos / ROOM_SIZE));
+    let structures = this.room.lookForAt(LOOK_CONSTRUCTION_SITES, pos % ROOM_SIZE, ~~(pos / ROOM_SIZE));
     return structures[0] && this.build(structures[0]);
 };
 

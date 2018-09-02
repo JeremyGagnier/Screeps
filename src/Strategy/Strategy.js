@@ -2,12 +2,13 @@ const FiniteStateMachine = require("FiniteStateMachine");
 const Intel = require("Intel");
 const Transition = require("Transition");
 
-const Initial1 = require("Strategy.Initial1");
-const Strategies = [Initial1];
+const Stage1 = require("Strategy.Stage1");
+const Stage2 = require("Strategy.Stage2");
+const Strategies = [Stage1, Stage2];
 
 // Strategic states
-const STATE_INITIAL_1 = 0;
-const STATE_INITIAL_2 = 1;
+const STATE_STAGE_1 = 0;
+const STATE_STAGE_2 = 1;
 
 let StrategyFSM;
 
@@ -31,7 +32,7 @@ let Strategy =
 
 StrategyFSM = new FiniteStateMachine(
 [
-    new Transition(STATE_INITIAL_1, STATE_INITIAL_2, Initial1.FromInitial1ToInitial2)
+    new Transition(STATE_STAGE_1, STATE_STAGE_2, Stage1.FromStage1ToStage2)
 ]);
 
 module.exports = Strategy;
