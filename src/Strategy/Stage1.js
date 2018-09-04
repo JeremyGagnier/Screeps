@@ -1,4 +1,3 @@
-const Stage2 = require("Strategy.Stage2");
 const StrategyUtil = require("Strategy.StrategyUtil");
 
 let Stage1 =
@@ -71,16 +70,6 @@ let Stage1 =
                 spawner.spawnCreep([WORK, CARRY, MOVE], Game.time.toString(), {memory: {new: true, type: 0}});
             }
         }
-    },
-
-    FromStage1ToStage2: () =>
-    {
-        let shouldTransition = Game.rooms[Memory.strategy.roomName].controller.level >= 2;
-        if (shouldTransition)
-        {
-            Stage2.Initialize();
-        }
-        return shouldTransition;
     }
 };
 

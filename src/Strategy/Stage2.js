@@ -1,7 +1,8 @@
 const ExtensionSpawner = require("ExtensionSpawner");
 const StrategyUtil = require("Strategy.StrategyUtil");
 
-let Stage2 =
+let Stage2;
+Stage2 =
 {
     Initialize: () =>
     {
@@ -92,9 +93,14 @@ let Stage2 =
         }
     },
 
-    FromStage2ToStage3: () =>
+    FromStage1ToStage2: () =>
     {
-        return false;//Memory.strategy.builtExtensionsIndex >= 5;
+        let shouldTransition = Game.rooms[Memory.strategy.roomName].controller.level >= 2;
+        if (shouldTransition)
+        {
+            Stage2.Initialize();
+        }
+        return shouldTransition;
     }
 };
 

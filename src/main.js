@@ -42,5 +42,13 @@ module.exports.loop = () =>
     catch(error)
     {
         console.log("Failed to advance strategy", error.stack);
+        // Advance failures can cause idle creeps to stay idle, so add them back to the list
+        for (let creepName in Game.creeps)
+        {
+            if (Memory.creeps[creepName].state === 0 && !Memory.strategy.idleCreeps.includes(creepName))
+            {
+                Memory.strategy.idleCreeps.push(creepName);
+            }
+        }
     }
 }

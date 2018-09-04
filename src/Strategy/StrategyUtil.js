@@ -16,7 +16,6 @@ let StrategyUtil =
             else
             {
                 return null;
-                break;
             }
         }
     },

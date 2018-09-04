@@ -6,6 +6,8 @@ global.ResetMemory = () =>
     delete Memory.intel;
     delete Memory.strategy;
     delete Memory.rooms;
+    Intel.Initialize();
+    Strategy.Initialize();
     for (let creepName in Memory.creeps)
     {
         if (!Game.creeps[creepName])
@@ -15,10 +17,9 @@ global.ResetMemory = () =>
         else
         {
             Memory.creeps[creepName] = {type: Memory.creeps[creepName].type, new: true};
+            Memory.strategy.idleCreeps.push(creepName);
         }
     }
-    Intel.Initialize();
-    Strategy.Initialize();
 }
 
 global.CleanCreeps = () =>

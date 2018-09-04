@@ -1,5 +1,3 @@
-const DEATH_THRESHOLD = 3;
-
 let CreepInital = require("Creeps.Initial");
 let CreepMiner = require("Creeps.Miner");
 let CreepHauler = require("Creeps.Hauler");
@@ -20,12 +18,8 @@ Creep.prototype.Advance = function()
         Memory.strategy.idleCreeps.push(this.name);
         CreepTypes[this.memory.type].Setup(this);
     }
-    else if (this.ticksToLive <= DEATH_THRESHOLD)
+    else if (this.ticksToLive <= 0)
     {
-        if (Memory.creeps[this.name])
-        {
-            delete Memory.creeps[this.name];
-        }
         return;
     }
     
