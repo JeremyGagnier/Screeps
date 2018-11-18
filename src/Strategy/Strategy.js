@@ -21,7 +21,8 @@ let Strategy =
         Memory.strategy = {
             state: 0,
             roomName: Object.keys(Game.rooms)[0],
-            idleCreeps: []
+            idleCreeps: [],
+            creepCount: 0
         };
     },
 

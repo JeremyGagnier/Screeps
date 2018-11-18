@@ -26,12 +26,38 @@ Stage3 =
         let roomName = Memory.strategy.roomName
         let roomIntel = Memory.intel[roomName];
         let room = Game.rooms[roomName];
-        let harvestJobs = StrategyUtil.GetHarvestJobs(roomName);
 
         let spawner = room.lookForAt(
             LOOK_STRUCTURES,
             roomIntel.spawnerPos % ROOM_SIZE,
             ~~(roomIntel.spawnerPos / ROOM_SIZE))[0];
+
+        let harvestJobs = [];
+        for (let sourcePosIter in roomIntel.sourcePositions)
+        {
+            let harvestPositions = roomIntel.harvestPositions[sourcePosIter];
+            for (let harvestPosIter in harvestPositions)
+            {
+                let harvesterName = roomIntel.harvesters[sourcePosIter][harvestPosIter];
+                if (harvesterName)
+                {
+                    let harvester = Game.creeps[harvesterName];
+                    if (!harvester ||
+                        !harvester.memory.buildSourceIndex ||
+                        harvester.memory.buildSourceIndex != sourcePosIter ||
+                        harvester.memory.buildHarvestIndex != harvestPosIter)
+                    {
+                        roomIntel.harvesters[sourcePosIter][harvestPosIter] = null;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                // No harvester OR harvester is dead OR harvester is holding position from previous state
+                harvestJobs.push({sourcePosIter: sourcePosIter, harvestPosIter: harvestPosIter});
+            }
+        }
 
         let stillIdleCreeps = [];
         let maybeCreep = StrategyUtil.GetNextIdleCreep();
@@ -56,11 +82,11 @@ Stage3 =
                     }
                     else
                     {
-                        if (maybeCreep.memory.buildPosition &&
+                        if (maybeCreep.memory.buildSourceIndex &&
                             !Memory.strategy.finishedContainers.includes(
-                                roomIntel.harvestPositions[maybeCreep.memory.buildPosition][0]))
+                                roomIntel.harvestPositions[maybeCreep.memory.buildSourceIndex][0]))
                         {
-                            containerPosition = roomIntel.harvestPositions[maybeCreep.memory.buildPosition][0];
+                            containerPosition = roomIntel.harvestPositions[maybeCreep.memory.buildSourceIndex][0];
                         }
                         else
                         {
@@ -105,6 +131,25 @@ Stage3 =
             maybeCreep = StrategyUtil.GetNextIdleCreep();
         }
 
+        let oldIdleCreeps = stillIdleCreeps;
+        stillIdleCreeps = [];
+        for (let creepIter in oldIdleCreeps)
+        {
+            let creep = oldIdleCreeps[creepIter];
+            if (creep.memory.buildSourceIndex)
+            {
+                let sourcePosIndex = creep.memory.buildSourceIndex;
+                let harvestPosIndex = creep.memory.buildHarvestIndex;
+                creep.SetHarvestJob(
+                    roomIntel.harvestPositions[sourcePosIndex][harvestPosIndex],
+                    roomIntel.sourcePositions[sourcePosIndex])
+            }
+            else
+            {
+                stillIdleCreeps.push(oldIdleCreeps[creepIter])
+            }
+        }
+
         let shouldSpawnCreep = false;
         for (let jobIter in harvestJobs)
         {
@@ -115,31 +160,24 @@ Stage3 =
             }
             let creep = stillIdleCreeps.pop();
             let job = harvestJobs[jobIter];
+            let sourcePosIndex = job.sourcePosIter;
+            let harvestPosIndex = job.harvestPosIter;
             creep.SetHarvestJob(
-                roomIntel.harvestPositions[job.sourcePosIter][job.harvestPosIter],
-                roomIntel.sourcePositions[job.sourcePosIter]);
-            creep.memory.buildPosition = job.sourcePosIter;
-            roomIntel.harvesters[job.sourcePosIter][job.harvestPosIter] = creep.name;
+                roomIntel.harvestPositions[sourcePosIndex][harvestPosIndex],
+                roomIntel.sourcePositions[sourcePosIndex]);
+            roomIntel.harvesters[sourcePosIndex][harvestPosIndex] = creep.name;
+
+            creep.memory.buildSourceIndex = sourcePosIndex;
+            creep.memory.buildHarvestIndex = harvestPosIndex;
         }
 
         Memory.strategy.idleCreeps = stillIdleCreeps.map(creep => creep.name);
 
         let creepsCount = Object.keys(Game.creeps).length;
-        if (shouldSpawnCreep && creepsCount < Memory.strategy.harvestPositionsCount)
-        {
-            let has300 = spawner.energy >= 300;
-            if (creepsCount >= 2 || has300)
-            {
-                if (has300)
-                {
-                    spawner.spawnCreep([WORK, WORK, CARRY, MOVE], Game.time.toString(), {memory: {new: true, type: 0}});
-                }
-            }
-            else if (spawner.energy >= 200)
-            {
-                spawner.spawnCreep([WORK, CARRY, MOVE], Game.time.toString(), {memory: {new: true, type: 0}});
-            }
-        }
+        StrategyUtil.MaybeSpawnInitialCreep(
+            shouldSpawnCreep && creepsCount < Memory.strategy.harvestPositionsCount,
+            creepsCount,
+            spawner);
     },
 
     FromStage2ToStage3: () =>

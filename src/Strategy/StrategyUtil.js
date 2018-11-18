@@ -20,10 +20,8 @@ let StrategyUtil =
         }
     },
 
-    GetHarvestJobs: (roomName) =>
+    GetHarvestJobs: (roomIntel) =>
     {
-        let roomIntel = Memory.intel[roomName];
-        let room = Game.rooms[roomName];
         let harvestJobs = [];
         for (let sourcePosIter in roomIntel.sourcePositions)
         {
@@ -50,6 +48,47 @@ let StrategyUtil =
             }
         }
         return harvestJobs;
+    },
+
+    AssignHarvestJobs: (roomIntel, harvestJobs, idleCreeps) =>
+    {
+        for (let jobIter in harvestJobs)
+        {
+            if (idleCreeps.length <= 0)
+            {
+                return true;
+            }
+            let creep = idleCreeps.pop();
+            let job = harvestJobs[jobIter];
+            let sourcePosIndex = job.sourcePosIter;
+            let harvestPosIndex = job.harvestPosIter;
+            creep.SetHarvestJob(
+                roomIntel.harvestPositions[sourcePosIndex][harvestPosIndex],
+                roomIntel.sourcePositions[sourcePosIndex]);
+            roomIntel.harvesters[sourcePosIndex][harvestPosIndex] = creep.name;
+        }
+        return false;
+    },
+
+    MaybeSpawnInitialCreep: (shouldSpawn, creepsCount, spawner) => {
+        let spawnBig = (creepsCount >= 2 && spawner.energy >= 300);
+        let spawnSmall = (creepsCount < 2 && spawner.energy >= 200);
+        if (shouldSpawn && (spawnBig || spawnSmall))
+        {
+            let body = []
+            if (spawnBig)
+            {
+                body = [WORK, CARRY, WORK, MOVE]
+            }
+            else
+            {
+                body = [CARRY, WORK, MOVE]
+            }
+            spawner.spawnCreep(
+                body,
+                Memory.strategy.creepCount.toString(),
+                {memory: {new: true, type: CREEP_INITIAL}});
+        }
     }
 }
 

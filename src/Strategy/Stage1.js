@@ -7,7 +7,7 @@ let Stage1 =
         let roomName = Memory.strategy.roomName;
         let roomIntel = Memory.intel[roomName];
         let room = Game.rooms[roomName];
-        let harvestJobs = StrategyUtil.GetHarvestJobs(roomName);
+        let harvestJobs = StrategyUtil.GetHarvestJobs(roomIntel);
 
         let spawner = room.lookForAt(
             LOOK_STRUCTURES,
@@ -37,39 +37,12 @@ let Stage1 =
             maybeCreep = StrategyUtil.GetNextIdleCreep();
         }
 
-        let shouldSpawnCreep = false;
-        for (let jobIter in harvestJobs)
-        {
-            if (stillIdleCreeps.length <= 0)
-            {
-                shouldSpawnCreep = true;
-                break;
-            }
-            let creep = stillIdleCreeps.pop();
-            let job = harvestJobs[jobIter];
-            creep.SetHarvestJob(
-                roomIntel.harvestPositions[job.sourcePosIter][job.harvestPosIter],
-                roomIntel.sourcePositions[job.sourcePosIter]);
-            roomIntel.harvesters[job.sourcePosIter][job.harvestPosIter] = creep.name;
-        }
+        let shouldSpawnCreep = StrategyUtil.AssignHarvestJobs(roomIntel, harvestJobs, stillIdleCreeps);
 
         Memory.strategy.idleCreeps = stillIdleCreeps.map(creep => creep.name);
 
-        if (shouldSpawnCreep)
-        {
-            let has300 = spawner.energy >= 300;
-            if (Object.keys(Game.creeps).length >= 2 || has300)
-            {
-                if (has300)
-                {
-                    spawner.spawnCreep([WORK, WORK, CARRY, MOVE], Game.time.toString(), {memory: {new: true, type: 0}});
-                }
-            }
-            else if (spawner.energy >= 200)
-            {
-                spawner.spawnCreep([WORK, CARRY, MOVE], Game.time.toString(), {memory: {new: true, type: 0}});
-            }
-        }
+        let creepsCount = Object.keys(Game.creeps).length;
+        StrategyUtil.MaybeSpawnInitialCreep(shouldSpawnCreep, creepsCount, spawner);
     }
 };
 

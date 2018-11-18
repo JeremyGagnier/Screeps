@@ -16,6 +16,11 @@ module.exports.loop = () =>
         Strategy.Initialize();
     }
 
+    if ((Game.time % 1500) == 0)
+    {
+        CleanCreeps()
+    }
+
     for (let creepName in Game.creeps)
     {
         try
