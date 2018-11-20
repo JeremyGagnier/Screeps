@@ -42,6 +42,11 @@ Creep.prototype.SetBuildJob = function(getEnergyPos, buildPos)
     CreepTypes[this.memory.type].SetBuildJob(this, getEnergyPos, buildPos);
 }
 
+Creep.prototype.SetDieJob = function(diePos)
+{
+    CreepTypes[this.memory.type].SetDieJob(this, diePos);
+}
+
 Creep.prototype.Move = function()
 {
     let pos = this.memory.targetPos;

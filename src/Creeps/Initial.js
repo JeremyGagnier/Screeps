@@ -5,7 +5,7 @@ const STATE_IDLE = 0;
 const STATE_MOVE = 1;
 const STATE_HARVEST = 2;
 const STATE_DEPOSIT = 3;
-const STATE_PLACEHOLDER = 4;
+const STATE_DIE = 4;
 const STATE_BUILD = 5;
 const STATE_REPAIR = 6;
 
@@ -37,6 +37,11 @@ let InitialActions =
         }
     },
 
+    Die: (creep) =>
+    {
+        creep.suicide();
+    },
+
     Build: (creep) =>
     {
         if (creep.Build() !== OK)
@@ -51,7 +56,7 @@ let InitialActions =
         {
             creep.memory.state = STATE_IDLE;
         }
-    },
+    }
 }
 
 let Actions = [
@@ -59,7 +64,7 @@ let Actions = [
     InitialActions.Move,
     InitialActions.Harvest,
     InitialActions.Deposit,
-    InitialActions.Idle,
+    InitialActions.Die,
     InitialActions.Build,
     InitialActions.Repair
 ];
@@ -131,6 +136,11 @@ let Initial =
         return shouldTransition;
     },
 
+    FromMoveToDie: (creep) =>
+    {
+        return creep.memory.jobType === JOB_DIE && creep.DistanceToTarget() <= 0;
+    },
+
     FromBuildToIdle: (creep) =>
     {
         return creep.IsEmpty();
@@ -157,6 +167,13 @@ let Initial =
         creep.memory.state = STATE_MOVE;
         creep.memory.jobType = JOB_BUILD;
         creep.memory.targetPos = buildPos;
+    },
+
+    SetDieJob: (creep, diePos) =>
+    {
+        creep.memory.state = STATE_MOVE;
+        creep.memory.jobType = JOB_DIE;
+        creep.memory.targetPos = diePos;
     }
 }
 
@@ -166,6 +183,7 @@ InitialFSM = new FiniteStateMachine(
     new Transition(STATE_MOVE, STATE_DEPOSIT, Initial.FromMoveToDeposit),
     new Transition(STATE_MOVE, STATE_BUILD, Initial.FromMoveToBuild),
     new Transition(STATE_MOVE, STATE_REPAIR, Initial.FromMoveToRepair),
+    new Transition(STATE_MOVE, STATE_DIE, Initial.FromMoveToDie),
 
     new Transition(STATE_DEPOSIT, STATE_IDLE, Initial.FromDepositToIdle),
 
