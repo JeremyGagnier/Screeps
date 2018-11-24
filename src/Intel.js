@@ -1,3 +1,5 @@
+const PathManager = require("PathManager");
+
 const NEIGHBOURS = [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]];
 
 let Intel;
@@ -77,14 +79,25 @@ Intel =
             }
         }
 
+        let spawnerToExtensionsPath = PathManager.GetSpawnerToExtensionPath(room.name, extensionsPos, spawnerPos);
+        let sourcePaths = PathManager.GetSourcePaths(
+            room.name,
+            extensionsPos,
+            spawnerPos,
+            sourcePositions,
+            spawnerToExtensionsPath);
+
         Memory.intel[room.name] =
         {
             sourcePositions: sourcePositions,
             harvestPositions: harvestPositions,
             harvesters: harvesters,
             spawnerPos: spawnerPos,
-            extensionsPos: extensionsPos
+            extensionsPos: extensionsPos,
+            spawnerToExtensionsPath: spawnerToExtensionsPath,
+            sourcePaths: sourcePaths,
         };
+
     },
 
     FindSuitableExtensionsPosition: (room, spawnerPos) =>

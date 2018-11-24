@@ -1,9 +1,9 @@
-let CreepInital = require("Creeps.Initial");
-let CreepMiner = require("Creeps.Miner");
-let CreepHauler = require("Creeps.Hauler");
-let CreepBuilder = require("Creeps.Builder");
-let CreepRefiller = require("Creeps.Refiller");
-let CreepTypes = [CreepInital, CreepMiner, CreepHauler, CreepBuilder, CreepRefiller];
+const CreepInital = require("Creeps.Initial");
+const CreepMiner = require("Creeps.Miner");
+const CreepHauler = require("Creeps.Hauler");
+const CreepBuilder = require("Creeps.Builder");
+const CreepRefiller = require("Creeps.Refiller");
+const CreepTypes = [CreepInital, CreepMiner, CreepHauler, CreepBuilder, CreepRefiller];
 
 Creep.prototype.Advance = function()
 {

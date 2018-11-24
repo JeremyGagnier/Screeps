@@ -1,5 +1,5 @@
-let ExtensionSpawner;
-ExtensionSpawner =
+let ExtensionManager;
+ExtensionManager =
 {
     POSITIONS: [
         [ 0, -1], [-1,  0], [ 0, -2], [-2,  0], [-1, -2], [-2, -1],
@@ -49,14 +49,14 @@ ExtensionSpawner =
     {
         for (let iter = startIndex; iter < endIndex; ++iter)
         {
-            let pos = ExtensionSpawner.GetTransformedPosition(iter, extensionsPos);
+            let pos = ExtensionManager.GetTransformedPosition(iter, extensionsPos);
             room.createConstructionSite(pos[0], pos[1], STRUCTURE_EXTENSION);
         }
     },
 
     GetTransformedPosition: (posIndex, extensionsPos) =>
     {
-        let pos = ExtensionSpawner.POSITIONS[posIndex];
+        let pos = ExtensionManager.POSITIONS[posIndex];
         switch (extensionsPos.orientation)
         {
             // Rotating visually clockwise (actually counterclockwise), then invert in the x-axis and repeat.
@@ -72,4 +72,4 @@ ExtensionSpawner =
     }
 }
 
-module.exports = ExtensionSpawner;
+module.exports = ExtensionManager;

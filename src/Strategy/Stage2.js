@@ -1,4 +1,4 @@
-const ExtensionSpawner = require("ExtensionSpawner");
+const ExtensionManager = require("ExtensionManager");
 const StrategyUtil = require("Strategy.StrategyUtil");
 
 /**
@@ -11,7 +11,7 @@ Stage2 =
     Initialize: () =>
     {
         let room = Game.rooms[Memory.strategy.roomName];
-        ExtensionSpawner.PlaceExtensions(room, 0, 5, Memory.intel[room.name].extensionsPos);
+        ExtensionManager.PlaceExtensions(room, 0, 5, Memory.intel[room.name].extensionsPos);
         Memory.strategy.builtExtensionsIndex = 0;
     },
 
@@ -35,7 +35,7 @@ Stage2 =
             {
                 if (spawner.IsFull())
                 {
-                    let extensionPos = ExtensionSpawner.GetTransformedPosition(
+                    let extensionPos = ExtensionManager.GetTransformedPosition(
                         Memory.strategy.builtExtensionsIndex,
                         roomIntel.extensionsPos);
                     let maybeExtension = room.lookForAt(LOOK_CONSTRUCTION_SITES, extensionPos[0], extensionPos[1])[0];

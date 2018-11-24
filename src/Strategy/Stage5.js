@@ -1,7 +1,8 @@
+const PathManager = require("PathManager");
 const StrategyUtil = require("Strategy.StrategyUtil");
 
 /**
- * Stage 5s purpose is to construct a filler for the extensions and one miner for each source.
+ * Stage 5s purpose is to construct a filler for the extensions and one miner and hauler for each source.
  */
 let Stage5;
 Stage5 =
@@ -11,6 +12,12 @@ Stage5 =
         Memory.strategy.refiller = null;
         Memory.strategy.harvesters = [];
         Memory.strategy.haulers = [];
+
+        PathManager.PlaceRoads(room, spawnerToExtensionsPath);
+        for (let pathIter in sourcePaths)
+        {
+            PathManager.PlaceRoads(room, sourcePaths[pathIter]);
+        }
     },
 
     Advance: () =>
