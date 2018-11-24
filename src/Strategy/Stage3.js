@@ -1,5 +1,9 @@
 const StrategyUtil = require("Strategy.StrategyUtil");
 
+/**
+ * Stage 3s purpose is to build the first container. This container is the slowest to construct and will be used as a
+ * trash as well as a storage for extensions.
+ */
 let Stage3;
 Stage3 =
 {
@@ -27,11 +31,7 @@ Stage3 =
         let roomIntel = Memory.intel[roomName];
         let room = Game.rooms[roomName];
         let harvestJobs = StrategyUtil.GetHarvestJobs(roomIntel);
-
-        let spawner = room.lookForAt(
-            LOOK_STRUCTURES,
-            roomIntel.spawnerPos % ROOM_SIZE,
-            ~~(roomIntel.spawnerPos / ROOM_SIZE))[0];
+        let spawner = room.lookForAt(LOOK_STRUCTURES, roomIntel.spawnerPos.x, roomIntel.spawnerPos.y)[0];
 
         let stillIdleCreeps = [];
         let maybeCreep = StrategyUtil.GetNextIdleCreep();

@@ -70,7 +70,8 @@ let StrategyUtil =
         return false;
     },
 
-    MaybeSpawnInitialCreep: (shouldSpawn, creepsCount, spawner) => {
+    MaybeSpawnInitialCreep: (shouldSpawn, creepsCount, spawner) =>
+    {
         let spawnBig = (creepsCount >= 2 && spawner.energy >= 300);
         let spawnSmall = (creepsCount < 2 && spawner.energy >= 200);
         if (shouldSpawn && (spawnBig || spawnSmall))

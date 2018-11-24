@@ -38,6 +38,7 @@ Intel =
 
         let flags = room.find(FIND_FLAGS);
         let extensionsPos = null;
+        let spawnerPos = null;
         for (let flagIter in flags)
         {
             let flag = flags[flagIter];
@@ -46,17 +47,126 @@ Intel =
                 let orientation = parseInt(flag.name.charAt(0));
                 extensionsPos = {x: flag.pos.x, y: flag.pos.y, orientation: orientation};
             }
+            else if (flag.name.includes("spawn"))
+            {
+                let orientation = parseInt(flag.name.charAt(0));
+                spawnerPos = {x: flag.pos.x, y: flag.pos.y, orientation: orientation};
+            }
         }
 
-        let spawner = room.find(FIND_MY_SPAWNS)[0]
+        // Flag spawner location
+        if (spawnerPos === null)
+        {
+            let spawners = room.find(FIND_MY_SPAWNS);
+            if (spawners.length !== 0)
+            {
+                let spawner = spawners[0];
+                let orientation = parseInt(spawner.name.charAt(0));
+                spawnerPos = {x: spawner.pos.x, y: spawner.pos.y, orientation: orientation};
+                room.createFlag(spawner.pos.x, spawner.pos.y, orientation.toString() + "spawn");
+            }
+        }
+
+        // Find location for extensions
+        if (spawnerPos !== null && extensionsPos === null)
+        {
+            extensionsPos = Intel.FindSuitableExtensionsPosition(room, spawnerPos);
+            if (extensionsPos)
+            {
+                room.createFlag(extensionsPos.x, extensionsPos.y, extensionsPos.orientation.toString() + "extension");
+            }
+        }
+
         Memory.intel[room.name] =
         {
-            spawnerPos: spawner.pos.x + ROOM_SIZE * spawner.pos.y,
             sourcePositions: sourcePositions,
             harvestPositions: harvestPositions,
             harvesters: harvesters,
+            spawnerPos: spawnerPos,
             extensionsPos: extensionsPos
         };
+    },
+
+    FindSuitableExtensionsPosition: (room, spawnerPos) =>
+    {
+        let spawnDeltaX, spawnDeltaY;
+        switch (spawnerPos.orientation)
+        {
+            case 0:
+                spawnDeltaX = 0;
+                spawnDeltaY = -1;
+                break;
+            case 1:
+                spawnDeltaX = 1;
+                spawnDeltaY = 0;
+                break;
+            case 2:
+                spawnDeltaX = 0;
+                spawnDeltaY = 1;
+                break;
+            case 3:
+                spawnDeltaX = -1;
+                spawnDeltaY = 0;
+                break;
+        }
+        for (let i = 0; i < 4; ++i)
+        {
+            let orientation = (spawnerPos.orientation + 2 + i) % 4;
+            let left, top, originX, originY;
+            switch (orientation)
+            {
+                case 0:
+                    left = -4;
+                    top = -12;
+                    originX = -1;
+                    originY = top + 9;
+                    break;
+                case 1:
+                    left = 3;
+                    top = -4;
+                    originX = left;
+                    originY = -1;
+                    break;
+                case 2:
+                    left = -5;
+                    top = 3;
+                    originX = 1;
+                    originY = top;
+                    break;
+                case 3:
+                    left = -12;
+                    top = -5;
+                    originX = left + 9;
+                    originY = 1;
+                    break;
+            }
+            let terrain = room.lookForAtArea(
+                LOOK_TERRAIN,
+                spawnerPos.y + spawnDeltaY + top,
+                spawnerPos.x + spawnDeltaX + left,
+                spawnerPos.y + spawnDeltaY + top + 9,
+                spawnerPos.x + spawnDeltaX + left + 9,
+                true);
+            let isEmpty = true;
+            for (let tIter in terrain)
+            {
+                if (terrain[tIter].terrain === "wall")
+                {
+                    isEmpty = false;
+                    break;
+                }
+            }
+            if (isEmpty)
+            {
+                return {
+                    x: spawnerPos.x + spawnDeltaX + originX,
+                    y: spawnerPos.y + spawnDeltaY + originY,
+                    orientation: orientation
+                };
+            }
+        }
+        console.log("Failed to find a suitable location for extensions");
+        return null;
     }
 }
 

@@ -1,10 +1,18 @@
 const StrategyUtil = require("Strategy.StrategyUtil");
 
 /**
- * Stage 1s purpose is to ramp up on creeps and get the RCL to 2 so that extensions and containers can be built.
+ * Stage 5s purpose is to construct a filler for the extensions and one miner for each source.
  */
-let Stage1 =
+let Stage5;
+Stage5 =
 {
+    Initialize: () =>
+    {
+        Memory.strategy.refiller = null;
+        Memory.strategy.harvesters = [];
+        Memory.strategy.haulers = [];
+    },
+
     Advance: () =>
     {
         let roomName = Memory.strategy.roomName;
@@ -40,9 +48,19 @@ let Stage1 =
 
         Memory.strategy.idleCreeps = stillIdleCreeps.map(creep => creep.name);
 
-        let creepsCount = Object.keys(Game.creeps).length;
-        StrategyUtil.MaybeSpawnInitialCreep(shouldSpawnCreep, creepsCount, spawner);
+        
+    },
+
+    FromStage4ToStage5: () =>
+    {
+        let shouldTransition = Memory.strategy.finishedContainers.length ===
+            Memory.intel[Memory.strategy.roomName].harvestPositions.length;
+        if (shouldTransition)
+        {
+            Stage5.Initialize();
+        }
+        return shouldTransition;
     }
 };
 
-module.exports = Stage1;
+module.exports = Stage5;

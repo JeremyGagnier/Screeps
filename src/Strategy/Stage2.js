@@ -1,6 +1,10 @@
 const ExtensionSpawner = require("ExtensionSpawner");
 const StrategyUtil = require("Strategy.StrategyUtil");
 
+/**
+ * Stage 2s purpose is to build five extensions. This is exactly enough to build an ideal miner. However such a miner
+ * won't be constructed until the initial containers are built.
+ */
 let Stage2;
 Stage2 =
 {
@@ -17,11 +21,7 @@ Stage2 =
         let roomIntel = Memory.intel[roomName];
         let room = Game.rooms[roomName];
         let harvestJobs = StrategyUtil.GetHarvestJobs(roomIntel);
-
-        let spawner = room.lookForAt(
-            LOOK_STRUCTURES,
-            roomIntel.spawnerPos % ROOM_SIZE,
-            ~~(roomIntel.spawnerPos / ROOM_SIZE))[0];
+        let spawner = room.lookForAt(LOOK_STRUCTURES, roomIntel.spawnerPos.x, roomIntel.spawnerPos.y)[0];
 
         let stillIdleCreeps = [];
         let maybeCreep = StrategyUtil.GetNextIdleCreep();

@@ -1,22 +1,17 @@
 const StrategyUtil = require("Strategy.StrategyUtil");
 
-let Stage4;
-Stage4 =
+/**
+ * Stage 4s purpose is to build one container for each source. Since the most efficient miner has no carry this is
+ * necessary to collect its harvest.
+ */
+let Stage4 =
 {
-    Initialize: () =>
-    {
-    },
-
     Advance: () =>
     {
         let roomName = Memory.strategy.roomName
         let roomIntel = Memory.intel[roomName];
         let room = Game.rooms[roomName];
-
-        let spawner = room.lookForAt(
-            LOOK_STRUCTURES,
-            roomIntel.spawnerPos % ROOM_SIZE,
-            ~~(roomIntel.spawnerPos / ROOM_SIZE))[0];
+        let spawner = room.lookForAt(LOOK_STRUCTURES, roomIntel.spawnerPos.x, roomIntel.spawnerPos.y)[0];
 
         let harvestJobs = [];
         for (let sourcePosIter in roomIntel.sourcePositions)
@@ -148,19 +143,14 @@ Stage4 =
 
         let creepsCount = Object.keys(Game.creeps).length;
         StrategyUtil.MaybeSpawnInitialCreep(
-            shouldSpawnCreep && creepsCount < Memory.strategy.harvestPositionsCount,
+            shouldSpawnCreep && (creepsCount < Memory.strategy.harvestPositionsCount),
             creepsCount,
             spawner);
     },
 
     FromStage3ToStage4: () =>
     {
-        let shouldTransition = Memory.strategy.finishedContainers !== null;
-        if (shouldTransition)
-        {
-            Stage4.Initialize();
-        }
-        return shouldTransition;
+        return Memory.strategy.finishedContainers !== null;
     }
 };
 
