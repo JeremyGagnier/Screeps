@@ -98,13 +98,14 @@ Intel =
                 continue;
             }
             let pos = sourcePaths[i][sourcePaths[i].length - 1];
-            if (!harvestPositions[i].contains(pos))
+            let compactPos = pos[0] + pos[1] * ROOM_SIZE
+            if (!harvestPositions[i].includes(compactPos))
             {
                 console.log("A source path doesn't go adjacent to its source, this is a bug.")
                 continue;
             }
-            harvestPositions[i] = harvestPositions[i].filter(p => p !== pos);
-            harvestPositions[i].unshift(pos);
+            harvestPositions[i] = harvestPositions[i].filter(p => p !== compactPos);
+            harvestPositions[i].unshift(compactPos);
         }
 
         Memory.intel[room.name] =

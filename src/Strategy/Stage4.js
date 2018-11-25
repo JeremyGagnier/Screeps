@@ -141,6 +141,7 @@ let Stage4 =
         Memory.strategy.idleCreeps = [stillIdleCreeps.pop()];
         stillIdleCreeps.map(creep => creep.SetDieJob(diePos));
 
+        let creepsCount = Object.keys(Game.creeps).length;
         StrategyUtil.MaybeSpawnInitialCreep(
             shouldSpawnCreep,
             creepsCount,
