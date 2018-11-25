@@ -28,7 +28,7 @@ let StrategyUtil =
             let harvestPositions = roomIntel.harvestPositions[sourcePosIter];
             for (let harvestPosIter in harvestPositions)
             {
-                let harvesterName = roomIntel.harvesters[sourcePosIter][harvestPosIter];
+                let harvesterName = roomIntel.initialHarvesters[sourcePosIter][harvestPosIter];
                 if (harvesterName)
                 {
                     let harvester = Game.creeps[harvesterName];
@@ -36,7 +36,7 @@ let StrategyUtil =
                         !harvester.memory.sourcePos ||
                         harvester.memory.sourcePos !== roomIntel.sourcePositions[sourcePosIter])
                     {
-                        roomIntel.harvesters[sourcePosIter][harvestPosIter] = null;
+                        roomIntel.initialHarvesters[sourcePosIter][harvestPosIter] = null;
                     }
                     else
                     {
@@ -65,7 +65,7 @@ let StrategyUtil =
             creep.SetHarvestJob(
                 roomIntel.harvestPositions[sourcePosIndex][harvestPosIndex],
                 roomIntel.sourcePositions[sourcePosIndex]);
-            roomIntel.harvesters[sourcePosIndex][harvestPosIndex] = creep.name;
+            roomIntel.initialHarvesters[sourcePosIndex][harvestPosIndex] = creep.name;
         }
         return false;
     },

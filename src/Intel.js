@@ -15,7 +15,9 @@ Intel =
     {
         let sourcePositions = [];
         let harvestPositions = [];
+        let initialHarvesters = [];
         let harvesters = [];
+        let haulers = [];
 
         let sources = room.find(FIND_SOURCES);
         for (let sourceIter in sources)
@@ -35,7 +37,9 @@ Intel =
             }
             sourcePositions.push(sourcePos.x + ROOM_SIZE * sourcePos.y);
             harvestPositions.push(positions);
-            harvesters.push(nulls);
+            initialHarvesters.push(nulls);
+            harvesters.push(null);
+            haulers.push(null);
         }
 
         let flags = room.find(FIND_FLAGS);
@@ -87,13 +91,36 @@ Intel =
             sourcePositions,
             spawnerToExtensionsPath);
 
+        for (let i in harvestPositions)
+        {
+            if (sourcePaths[i] === null)
+            {
+                continue;
+            }
+            let pos = sourcePaths[i][sourcePaths[i].length - 1];
+            if (!harvestPositions[i].contains(pos))
+            {
+                console.log("A source path doesn't go adjacent to its source, this is a bug.")
+                continue;
+            }
+            harvestPositions[i] = harvestPositions[i].filter(p => p !== pos);
+            harvestPositions[i].unshift(pos);
+        }
+
         Memory.intel[room.name] =
         {
             sourcePositions: sourcePositions,
             harvestPositions: harvestPositions,
+            initialHarvesters: initialHarvesters,
             harvesters: harvesters,
+            haulers: haulers,
+            refiller: null,
+            builtExtensionsIndex: 0,
+
             spawnerPos: spawnerPos,
             extensionsPos: extensionsPos,
+            finishedContainers: null,
+
             spawnerToExtensionsPath: spawnerToExtensionsPath,
             sourcePaths: sourcePaths,
         };

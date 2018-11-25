@@ -14,15 +14,11 @@ Stage3 =
         room.createConstructionSite(extensionsPos.x, extensionsPos.y, STRUCTURE_CONTAINER);
 
         let harvestPositions = Memory.intel[room.name].harvestPositions;
-        let harvestPositionsCount = 0;
         for (let posIter in harvestPositions)
         {
-            harvestPositionsCount += harvestPositions[posIter].length;
             let pos = harvestPositions[posIter][0];
             room.createConstructionSite(pos % ROOM_SIZE, ~~(pos / ROOM_SIZE), STRUCTURE_CONTAINER);
         }
-        Memory.strategy.finishedContainers = null;
-        Memory.strategy.harvestPositionsCount = harvestPositionsCount;
     },
 
     Advance: () =>
@@ -63,7 +59,7 @@ Stage3 =
                             roomIntel.extensionsPos.y)[0];
                         if (maybeContainer)
                         {
-                            Memory.strategy.finishedContainers = [];
+                            roomIntel.finishedContainers = [];
                             let controllerPos = room.controller.pos;
                             maybeCreep.SetDepositJob(controllerPos.x + ROOM_SIZE * controllerPos.y, 3);
                         }
@@ -90,7 +86,7 @@ Stage3 =
 
     FromStage2ToStage3: () =>
     {
-        let shouldTransition = Memory.strategy.builtExtensionsIndex >= 5;
+        let shouldTransition = Memory.intel[Memory.strategy.roomName].builtExtensionsIndex >= 5;
         if (shouldTransition)
         {
             Stage3.Initialize();

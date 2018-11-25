@@ -10,9 +10,8 @@ Stage2 =
 {
     Initialize: () =>
     {
-        let room = Game.rooms[Memory.strategy.roomName];
-        ExtensionManager.PlaceExtensions(room, 0, 5, Memory.intel[room.name].extensionsPos);
-        Memory.strategy.builtExtensionsIndex = 0;
+        let roomName = Memory.strategy.roomName;
+        ExtensionManager.PlaceExtensions(Game.rooms[roomName], 0, 5, Memory.intel[roomName].extensionsPos);
     },
 
     Advance: () =>
@@ -36,7 +35,7 @@ Stage2 =
                 if (spawner.IsFull())
                 {
                     let extensionPos = ExtensionManager.GetTransformedPosition(
-                        Memory.strategy.builtExtensionsIndex,
+                        roomIntel.builtExtensionsIndex,
                         roomIntel.extensionsPos);
                     let maybeExtension = room.lookForAt(LOOK_CONSTRUCTION_SITES, extensionPos[0], extensionPos[1])[0];
                     if (maybeExtension)
@@ -45,7 +44,7 @@ Stage2 =
                     }
                     else
                     {
-                        Memory.strategy.builtExtensionsIndex += 1;
+                        roomIntel.builtExtensionsIndex += 1;
                         let controllerPos = room.controller.pos;
                         maybeCreep.SetDepositJob(controllerPos.x + ROOM_SIZE * controllerPos.y, 3);
                     }
