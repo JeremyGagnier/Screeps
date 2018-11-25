@@ -138,8 +138,11 @@ let Stage4 =
 
         let extensionPos = Memory.intel[room.name].extensionsPos;
         let diePos = extensionPos.x + ROOM_SIZE * extensionPos.y;
-        Memory.strategy.idleCreeps = [stillIdleCreeps.pop()];
-        stillIdleCreeps.map(creep => creep.SetDieJob(diePos));
+        if (stillIdleCreeps.length > 0)
+        {
+            stillIdleCreeps.pop()
+            stillIdleCreeps.map(creep => creep.SetDieJob(diePos));
+        }
 
         let creepsCount = Object.keys(Game.creeps).length;
         StrategyUtil.MaybeSpawnInitialCreep(

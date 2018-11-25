@@ -58,9 +58,6 @@ Stage2 =
         }
 
         let shouldSpawnCreep = StrategyUtil.AssignHarvestJobs(roomIntel, harvestJobs, stillIdleCreeps);
-
-        Memory.strategy.idleCreeps = stillIdleCreeps.map(creep => creep.name);
-
         let creepsCount = Object.keys(Game.creeps).length;
         StrategyUtil.MaybeSpawnInitialCreep(shouldSpawnCreep, creepsCount, spawner);
     },

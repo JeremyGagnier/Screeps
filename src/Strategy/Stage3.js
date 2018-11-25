@@ -63,6 +63,10 @@ Stage3 =
                             let controllerPos = room.controller.pos;
                             maybeCreep.SetDepositJob(controllerPos.x + ROOM_SIZE * controllerPos.y, 3);
                         }
+                        else
+                        {
+                            stillIdleCreeps.push(maybeCreep);
+                        }
                     }
                 }
                 else
@@ -74,9 +78,6 @@ Stage3 =
         }
        
         let shouldSpawnCreep = StrategyUtil.AssignHarvestJobs(roomIntel, harvestJobs, stillIdleCreeps);
-
-        Memory.strategy.idleCreeps = stillIdleCreeps.map(creep => creep.name);
-
         let creepsCount = Object.keys(Game.creeps).length;
         StrategyUtil.MaybeSpawnInitialCreep(
             shouldSpawnCreep && creepsCount,

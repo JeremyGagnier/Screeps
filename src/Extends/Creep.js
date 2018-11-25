@@ -15,7 +15,6 @@ Creep.prototype.Advance = function()
     if (this.memory.new)
     {
         this.memory.new = false;
-        Memory.strategy.idleCreeps.push(this.name);
         Memory.strategy.creepCount += 1;
         CreepTypes[this.memory.type].Setup(this);
     }

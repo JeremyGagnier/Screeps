@@ -119,8 +119,6 @@ Stage5 =
 
         // Assign empty initial creeps to harvesting jobs.
         let shouldSpawnCreep = StrategyUtil.AssignHarvestJobs(roomIntel, harvestJobs, stillIdleCreeps);
-
-        Memory.strategy.idleCreeps = stillIdleCreeps.map(creep => creep.name);
     },
 
     FromStage4ToStage5: () =>

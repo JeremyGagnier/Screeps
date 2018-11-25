@@ -82,6 +82,7 @@ let Initial =
     {
         if (creep.memory.state === STATE_IDLE)
         {
+            Memory.strategy.idleCreeps.push(creep.name);
             return;
         }
 
