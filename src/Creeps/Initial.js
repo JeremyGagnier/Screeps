@@ -7,7 +7,7 @@ const STATE_HARVEST = 2;
 const STATE_DEPOSIT = 3;
 const STATE_DIE = 4;
 const STATE_BUILD = 5;
-const STATE_REPAIR = 6;
+const STATE_REPAIR = 6;     // Unused
 
 let InitialActions =
 {

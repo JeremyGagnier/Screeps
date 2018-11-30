@@ -1,4 +1,5 @@
 const PathManager = require("PathManager");
+const SpawnManager = require("SpawnManager");
 const StrategyUtil = require("Strategy.StrategyUtil");
 
 /**
@@ -9,6 +10,7 @@ Stage5 =
 {
     Initialize: () =>
     {
+        let room = Game.rooms[Memory.strategy.roomName];
         PathManager.PlaceRoads(room, spawnerToExtensionsPath);
         for (let pathIter in sourcePaths)
         {
@@ -32,8 +34,8 @@ Stage5 =
             }
         }
 
-        let numHarvesters = 0;
-        let numHaulers = 0;
+        let harvestJobs = [];
+        let haulJobs = [];
         for (let i in roomIntel.haulers)
         {
             let harvesterName = roomIntel.harvesters[i];
@@ -41,7 +43,7 @@ Stage5 =
             {
                 if (Game.creeps[harvesterName])
                 {
-                    numHarvesters += 1;
+                    harvestJobs.push(i);
                 }
                 else
                 {
@@ -54,7 +56,7 @@ Stage5 =
             {
                 if (Game.creeps[haulerName])
                 {
-                    numHaulers += 1;
+                    haulJobs.push(i);
                 }
                 else
                 {
@@ -63,7 +65,8 @@ Stage5 =
             }
         }
 
-        let harvestJobs = [];
+        let maxHarvestJobs = 0;
+        let initialHarvestJobs = [];
         for (let sourcePosIter in roomIntel.sourcePositions)
         {
             if (roomIntel.haulers[sourcePosIter] !== null)
@@ -71,6 +74,7 @@ Stage5 =
                 continue;
             }
             let harvestPositions = roomIntel.harvestPositions[sourcePosIter];
+            maxHarvestJobs += harvestPositions.length;
             for (let harvestPosIter in harvestPositions)
             {
                 let harvesterName = roomIntel.initialHarvesters[sourcePosIter][harvestPosIter];
@@ -89,36 +93,126 @@ Stage5 =
                     }
                 }
                 // No harvester OR harvester is dead OR harvester has finished harvesting.
-                harvestJobs.push({sourcePosIter: sourcePosIter, harvestPosIter: harvestPosIter});
+                initialHarvestJobs.push({sourcePosIter: sourcePosIter, harvestPosIter: harvestPosIter});
             }
         }
 
-        // Assign full initial creeps to hauling jobs.
         let stillIdleCreeps = [];
         let maybeCreep = StrategyUtil.GetNextIdleCreep();
         while (maybeCreep)
         {
-            if (maybeCreep.IsEmpty())
+            switch (maybeCreep.memory.type)
             {
-                stillIdleCreeps.push(maybeCreep);
-            }
-            else
-            {
-                if (spawner.IsFull())
-                {
-                    let controllerPos = room.controller.pos;
-                    maybeCreep.SetDepositJob(controllerPos.x + ROOM_SIZE * controllerPos.y, 3);
-                }
-                else
-                {
-                    maybeCreep.SetDepositJob(spawner.pos.x + ROOM_SIZE * spawner.pos.y);
-                }
+                case CREEP_INITIAL:
+                    if (maybeCreep.IsEmpty())
+                    {
+                        stillIdleCreeps.push(maybeCreep);
+                    }
+                    else
+                    {
+                        if (spawner.IsFull())
+                        {
+                            let containerPos = roomIntel.extensionsPos;
+                            let container = room.lookForAt(LOOK_STRUCTURES, containerPos.x, containerPos.y)[0];
+                            if (container.IsFull())
+                            {
+                                let controllerPos = room.controller.pos;
+                                maybeCreep.SetDepositJob(controllerPos.x + ROOM_SIZE * controllerPos.y, 3);
+                            }
+                            else
+                            {
+                                maybeCreep.SetDepositJob(containerPos.x + ROOM_SIZE * containerPos.y);
+                            }
+                        }
+                        else
+                        {
+                            maybeCreep.SetDepositJob(spawner.pos.x + ROOM_SIZE * spawner.pos.y);
+                        }
+                    }
+                    break;
+
+                case CREEP_MINER:
+                    let jobIndex = harvestJobs.pop();
+                    roomIntel.harvesters[jobIndex] = maybeCreep.name;
+                    maybeCreep.SetHarvestJob(null, jobIndex);
+                    break;
+
+                case CREEP_HAULER:
+                    let jobIndex = haulJobs.pop();
+                    roomIntel.haulers[jobIndex] = maybeCreep.name;
+                    maybeCreep.SetDepositJob(jobIndex);
+                    break;
             }
             maybeCreep = StrategyUtil.GetNextIdleCreep();
         }
 
-        // Assign empty initial creeps to harvesting jobs.
-        let shouldSpawnCreep = StrategyUtil.AssignHarvestJobs(roomIntel, harvestJobs, stillIdleCreeps);
+        // Before spawning initial creeps we want to try and spawn higher tier creeps
+        // First try and spawn a refiller
+        if (roomIntel.refiller === null)
+        {
+            if (spawner.energy >= 300)
+            {
+                spawner.spawnCreep(
+                    [CARRY, CARRY, CARRY, CARRY, CARRY, MOVE],
+                    Memory.strategy.creepCount.toString(),
+                    {
+                        memory: {new: true, type: CREEP_REFILLER},
+                        directions: SpawnManager.GetSpawnDirection(roomIntel.spawnerPos)
+                    });
+            }
+        }
+        // Spawn hauler before harvester
+        else if (haulJobs.length === harvestJobs.length)
+        {
+            // Minus 4 because the two endpoints are containers.
+            let roundTripTicks = roomIntel.sourcePaths[haulJobs[0]].length * 2 - 4;
+            // Cap at 7 because it will need 4 move and the max cost is 550.
+            let carrySize = Math.max(roundTripTicks / 5 + 1, 7);
+            // Defined so that the hauler can move one square per tick.
+            let moveSize = carrySize / 2 + carrySize % 2;
+            let body = [];
+            // Put the final move and carry at the end since it's more efficient.
+            for (let i = 1; i < carrySize; ++i)
+            {
+                body.push(CARRY);
+            }
+            for (let i = 1; i < moveSize; ++i)
+            {
+                body.push(MOVE);
+            }
+            body.push(CARRY);
+            body.push(MOVE);
+            if (spawner.energy >= (carrySize + moveSize) * 50)
+            {
+                spawner.spawnCreep(
+                    body,
+                    Memory.strategy.creepCount.toString(),
+                    {
+                        memory: {new: true, type: CREEP_HAULER},
+                        directions: SpawnManager.GetSpawnDirection(roomIntel.spawnerPos)
+                    });
+            }
+        }
+        else
+        {
+            if (spawner.energy >= 550)
+            {
+                spawner.spawnCreep(
+                    [WORK, WORK, WORK, WORK, WORK, MOVE],
+                    Memory.strategy.creepCount.toString(),
+                    {
+                        memory: {new: true, type: CREEP_MINER},
+                        directions: SpawnManager.GetSpawnDirection(roomIntel.spawnerPos)
+                    });
+            }
+        }
+
+        let shouldSpawnCreep = StrategyUtil.AssignHarvestJobs(roomIntel, initialHarvestJobs, stillIdleCreeps);
+        let creepsCount = Object.keys(Game.creeps).length;
+        StrategyUtil.MaybeSpawnInitialCreep(
+            shouldSpawnCreep && creepsCount < maxHarvestJobs,
+            creepsCount,
+            spawner);
     },
 
     FromStage4ToStage5: () =>
