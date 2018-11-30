@@ -54,9 +54,20 @@ ExtensionManager =
         }
     },
 
+    GetWalkPosition: (posIndex, extensionsPos) =>
+    {
+        let pos = ExtensionManager.WALK_POSITIONS[posIndex];
+        return ExtensionManager.__TransformPos(pos, extensionsPos);
+    }
+
     GetTransformedPosition: (posIndex, extensionsPos) =>
     {
         let pos = ExtensionManager.POSITIONS[posIndex];
+        return ExtensionManager.__TransformPos(pos, extensionsPos);
+    },
+
+    __TransformPos: (pos, extensionsPos) =>
+    {
         switch (extensionsPos.orientation)
         {
             // Rotating visually clockwise (actually counterclockwise), then invert in the x-axis and repeat.

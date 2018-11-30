@@ -18,19 +18,8 @@ let RefillerActions =
         if (creep.fatigue <= 0)
         {
             creep.memory.walkIndex += 1;
-            let path = Memory.intel[creep.room.name].spawnerToExtensionsPath;
-            let to;
-            if (creep.memory.walkIndex >= path.length)
-            {
-                to = creep.memory.startingPos;
-            }
-            else
-            {
-                to = path[creep.memory.walkIndex];
-            }
-            let dx = to.x - creep.pos.x;
-            let dy = to.y - creep.pos.y;
-            if (creep.move(DIRECTIONS[dy + 1][dx + 1]) !== 0)
+            let to = Memory.intel[creep.room.name].spawnerToExtensionsPath[creep.memory.walkIndex];
+            if (creep.move(DIRECTIONS[to.y - creep.pos.y + 1][to.x - creep.pos.x + 1]) !== 0)
             {
                 // Returns nonzero when path is blocked by another creep
                 creep.memory.walkIndex -= 1;
@@ -40,14 +29,50 @@ let RefillerActions =
 
     Take: (creep) =>
     {
-
-        //let containerPos = Memory.intel[creep.room.name].extensionsPos;
-        //let container = room.lookForAt(LOOK_STRUCTURES, containerPos.x, containerPos.y)[0];
+        let containerPos = creep.memory.extensionsPos;
+        let container = room.lookForAt(LOOK_STRUCTURES, containerPos.x, containerPos.y)[0];
+        creep.withdraw(container, RESOURCE_ENERGY);
+        if (!creep.IsEmpty() && creep.fatigue <= 0)
+        {
+            let to = ExtensionManager.GetWalkPosition(0, creep.memory.extensionsPos);
+            creep.move(DIRECTIONS[to.y - creep.pos.y + 1][to.x - creep.pos.x + 1]);
+        }
     },
 
     Fill: (creep) =>
     {
-
+        if (!creep.memory.skipping &&
+            creep.memory.fillIndex < ExtensionManager.FILLS_BEFORE_MOVE[creep.memory.walkIndex])
+        {
+            let fillPos =
+                ExtensionManager.GetTransformedPosition(creep.memory.totalFillIndex, creep.memory.extensionsPos);
+            let maybeExtension = room.lookForAt(LOOK_STRUCTURES, fillPos.x, fillPos.y)[0];
+            if (maybeExtension && !creep.IsEmpty())
+            {
+                creep.transfer(maybeExtension, RESOURCE_ENERGY);
+                creep.memory.fillIndex += 1;
+                creep.memory.totalFillIndex += 1;
+            }
+            else
+            {
+                creep.memory.skipping = true;
+            }
+        }
+        else if (creep.fatigue <= 0)
+        {
+            creep.memory.walkIndex += 1;
+            let to = ExtensionManager.GetWalkPosition(creep.memory.walkIndex, creep.memory.extensionsPos);
+            if (creep.move(DIRECTIONS[to.y - creep.pos.y + 1][to.x - creep.pos.x + 1]) === 0)
+            {
+                creep.memory.fillIndex = 0;
+            }
+            else
+            {
+                // Returns nonzero when path is blocked by another creep
+                console.log("Refiller got blocked by a creep, this shouldn't happen!");
+                creep.memory.walkIndex -= 1;
+            }
+        }
     }
 }
 
@@ -65,9 +90,11 @@ let Refiller =
     {
         creep.memory.state = STATE_MOVE;
         let extensionsPos = Memory.intel[creep.room.name].extensionsPos;
-        creep.memory.startingPos = ExtensionManager.GetTransformedPosition(0, extensionsPos);
+        creep.memory.extensionsPos = extensionsPos;
         creep.memory.walkIndex = 0;
         creep.memory.fillIndex = 0;
+        creep.memory.totalFillIndex = 0;
+        creep.memory.skipping = false;
     },
 
     Advance: (creep) =>
@@ -78,8 +105,8 @@ let Refiller =
 
     FromMoveToTake: (creep) =>
     {
-        let shouldTransition =
-            creep.pos.x == creep.memory.startingPos[0] && creep.pos.y == creep.memory.startingPos[1];
+        let pos = creep.memory.extensionsPos;
+        let shouldTransition = creep.pos.x == pos[0] && creep.pos.y == pos[1];
         if (shouldTransition)
         {
             creep.memory.walkIndex = 0;
@@ -89,13 +116,26 @@ let Refiller =
 
     FromTakeToFill: (creep) =>
     {
-        return !creep.IsEmpty();
+        let pos = ExtensionManager.GetWalkPosition(0, creep.memory.extensionsPos);
+        let shouldTransition = creep.pos.x == pos[0] && creep.pos.y == pos[1];
+        if (shouldTransition)
+        {
+            creep.memory.walkIndex = 0;
+            creep.memory.fillIndex = 0;
+            creep.memory.totalFillIndex = 0;
+        }
+        return shouldTransition;
     },
 
     FromFillToTake: (creep) =>
     {
-        return creep.IsEmpty() ||
-            (creep.pos.x == creep.memory.startingPos[0] && creep.pos.y == creep.memory.startingPos[1]);
+        let pos = creep.memory.extensionsPos;
+        let shouldTransition = creep.pos.x == pos[0] && creep.pos.y == pos[1];
+        if (shouldTransition)
+        {
+            creep.memory.skipCycle = false;
+        }
+        return shouldTransition;
     }
 }
 
