@@ -11,7 +11,10 @@ const STATE_REPAIR = 6;     // Unused
 
 let InitialActions =
 {
-    Idle: (creep) => {},
+    Idle: (creep) =>
+    {
+        Memory.strategy.idleCreeps.push(creep.name);
+    },
 
     Move: (creep) =>
     {
@@ -80,12 +83,6 @@ let Initial =
 
     Advance: (creep) =>
     {
-        if (creep.memory.state === STATE_IDLE)
-        {
-            Memory.strategy.idleCreeps.push(creep.name);
-            return;
-        }
-
         creep.memory.state = InitialFSM.TryTransition(creep.memory.state, creep);
         Actions[creep.memory.state](creep);
     },

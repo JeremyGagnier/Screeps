@@ -5,11 +5,6 @@ const Transition = require("Transition");
 const STATE_MOVE = 0;
 const STATE_TAKE = 1;
 const STATE_FILL = 2;
-const DIRECTIONS = [
-    [TOP_LEFT   , TOP      , TOP_RIGHT   ],
-    [LEFT       , undefined, RIGHT       ],
-    [BOTTOM_LEFT, BOTTOM   , BOTTOM_RIGHT]
-];
 
 let RefillerActions =
 {
@@ -140,7 +135,7 @@ let Refiller =
 }
 
 
-InitialFSM = new FiniteStateMachine(
+RefillerFSM = new FiniteStateMachine(
 [
     new Transition(STATE_MOVE, STATE_TAKE, Refiller.FromMoveToTake),
     new Transition(STATE_TAKE, STATE_FILL, Refiller.FromTakeToFill),

@@ -13,3 +13,9 @@ global.CREEP_MINER = 1;
 global.CREEP_HAULER = 2;
 global.CREEP_BUILDER = 3;
 global.CREEP_REFILLER = 4;
+
+global.DIRECTIONS = [
+    [TOP_LEFT   , TOP      , TOP_RIGHT   ],
+    [LEFT       , undefined, RIGHT       ],
+    [BOTTOM_LEFT, BOTTOM   , BOTTOM_RIGHT]
+];

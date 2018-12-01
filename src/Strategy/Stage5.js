@@ -134,7 +134,7 @@ Stage5 =
                 case CREEP_MINER:
                     let jobIndex = harvestJobs.pop();
                     roomIntel.harvesters[jobIndex] = maybeCreep.name;
-                    maybeCreep.SetHarvestJob(null, jobIndex);
+                    maybeCreep.SetHarvestJob(roomIntel.sourcePositions[jobIndex], jobIndex);
                     break;
 
                 case CREEP_HAULER:
