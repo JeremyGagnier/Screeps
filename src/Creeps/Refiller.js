@@ -2,7 +2,7 @@ const ExtensionManager = require("ExtensionManager");
 const FiniteStateMachine = require("FiniteStateMachine");
 const Transition = require("Transition");
 
-const STATE_MOVE = 0;
+const STATE_MOVE_TO_PATH = 0;
 const STATE_TAKE = 1;
 const STATE_FILL = 2;
 
@@ -83,7 +83,7 @@ let Refiller =
 {
     Setup: (creep) =>
     {
-        creep.memory.state = STATE_MOVE;
+        creep.memory.state = STATE_MOVE_TO_PATH;
         let extensionsPos = Memory.intel[creep.room.name].extensionsPos;
         creep.memory.extensionsPos = extensionsPos;
         creep.memory.walkIndex = 0;
@@ -135,9 +135,8 @@ let Refiller =
 }
 
 
-RefillerFSM = new FiniteStateMachine(
-[
-    new Transition(STATE_MOVE, STATE_TAKE, Refiller.FromMoveToTake),
+RefillerFSM = new FiniteStateMachine([
+    new Transition(STATE_MOVE_TO_PATH, STATE_TAKE, Refiller.FromMoveToTake),
     new Transition(STATE_TAKE, STATE_FILL, Refiller.FromTakeToFill),
     new Transition(STATE_FILL, STATE_TAKE, Refiller.FromFillToTake)
 ]);

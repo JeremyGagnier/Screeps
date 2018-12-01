@@ -175,8 +175,7 @@ let Initial =
     }
 }
 
-InitialFSM = new FiniteStateMachine(
-[
+InitialFSM = new FiniteStateMachine([
     new Transition(STATE_MOVE, STATE_HARVEST, Initial.FromMoveToHarvest),
     new Transition(STATE_MOVE, STATE_DEPOSIT, Initial.FromMoveToDeposit),
     new Transition(STATE_MOVE, STATE_BUILD, Initial.FromMoveToBuild),

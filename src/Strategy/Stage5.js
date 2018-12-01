@@ -99,6 +99,7 @@ Stage5 =
 
         let stillIdleCreeps = [];
         let maybeCreep = StrategyUtil.GetNextIdleCreep();
+        let jobIndex;
         while (maybeCreep)
         {
             switch (maybeCreep.memory.type)
@@ -132,13 +133,13 @@ Stage5 =
                     break;
 
                 case CREEP_MINER:
-                    let jobIndex = harvestJobs.pop();
+                    jobIndex = harvestJobs.pop();
                     roomIntel.harvesters[jobIndex] = maybeCreep.name;
                     maybeCreep.SetHarvestJob(roomIntel.sourcePositions[jobIndex], jobIndex);
                     break;
 
                 case CREEP_HAULER:
-                    let jobIndex = haulJobs.pop();
+                    jobIndex = haulJobs.pop();
                     roomIntel.haulers[jobIndex] = maybeCreep.name;
                     maybeCreep.SetDepositJob(jobIndex);
                     break;

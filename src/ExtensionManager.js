@@ -58,7 +58,7 @@ ExtensionManager =
     {
         let pos = ExtensionManager.WALK_POSITIONS[posIndex];
         return ExtensionManager.__TransformPos(pos, extensionsPos);
-    }
+    },
 
     GetTransformedPosition: (posIndex, extensionsPos) =>
     {
