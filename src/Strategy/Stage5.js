@@ -11,10 +11,11 @@ Stage5 =
     Initialize: () =>
     {
         let room = Game.rooms[Memory.strategy.roomName];
-        PathManager.PlaceRoads(room, spawnerToExtensionsPath);
-        for (let pathIter in sourcePaths)
+        let roomIntel = Memory.intel[Memory.strategy.roomName];
+        PathManager.PlaceRoads(room, roomIntel.spawnerToExtensionsPath);
+        for (let pathIter in roomIntel.sourcePaths)
         {
-            PathManager.PlaceRoads(room, sourcePaths[pathIter]);
+            PathManager.PlaceRoads(room, roomIntel.sourcePaths[pathIter]);
         }
     },
 
@@ -41,27 +42,29 @@ Stage5 =
             let harvesterName = roomIntel.harvesters[i];
             if (harvesterName !== null)
             {
-                if (Game.creeps[harvesterName])
-                {
-                    harvestJobs.push(i);
-                }
-                else
+                if (!Game.creeps[harvesterName])
                 {
                     roomIntel.harvesters[i] = null;
+                    harvestJobs.push(i);
                 }
+            }
+            else
+            {
+                    harvestJobs.push(i);
             }
 
             let haulerName = roomIntel.haulers[i];
             if (haulerName !== null)
             {
-                if (Game.creeps[haulerName])
-                {
-                    haulJobs.push(i);
-                }
-                else
+                if (!Game.creeps[haulerName])
                 {
                     roomIntel.haulers[i] = null;
+                    haulJobs.push(i);
                 }
+            }
+            else
+            {
+                haulJobs.push(i);
             }
         }
 
@@ -219,7 +222,7 @@ Stage5 =
     FromStage4ToStage5: () =>
     {
         let roomIntel = Memory.intel[Memory.strategy.roomName];
-        let shouldTransition = roomIntel.finishedContainers.length === roomIntel.harvestPositions.length;
+        let shouldTransition = roomIntel.finishedContainers.length >= roomIntel.harvestPositions.length;
         if (shouldTransition)
         {
             Stage5.Initialize();

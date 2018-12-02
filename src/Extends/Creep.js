@@ -52,6 +52,33 @@ Creep.prototype.Move = function()
     return this.moveTo(pos % ROOM_SIZE, ~~(pos / ROOM_SIZE), {reusePath: 3});
 };
 
+Creep.prototype.MoveByPath = function(forward = true)
+{
+    let currentPos = this.pos.x + this.pos.y * ROOM_SIZE;
+    if (currentPos !== this.memory.lastPos)
+    {
+        if (forward)
+        {
+            this.memory.walkIndex += 1;
+        }
+        else
+        {
+            this.memory.walkIndex -= 1;
+        }
+        this.memory.lastPos = currentPos;
+    }
+    let to = this.memory.path[this.memory.walkIndex];
+    let direction = DIRECTIONS[to[1] - this.pos.y + 1][to[0] - this.pos.x + 1];
+    if (direction)
+    {
+        this.move(direction);
+    }
+    else
+    {
+        console.log("Creep " + this.name + " was not adjacent to its next path position");
+    }
+};
+
 Creep.prototype.Harvest = function()
 {
     let pos = this.memory.targetPos;

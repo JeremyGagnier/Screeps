@@ -7,7 +7,7 @@ PathManager =
     GetSpawnerToExtensionPath: (roomName, extensionsPos, spawnerPos) =>
     {
         let spawnerRoadPos = SpawnManager.GetRoadPosition(spawnerPos);
-        let path = PathFinder.search(
+        let pathData = PathFinder.search(
             new RoomPosition(spawnerRoadPos[0], spawnerRoadPos[1], roomName),
             {
                 pos: new RoomPosition(extensionsPos.x, extensionsPos.y, roomName),
@@ -18,14 +18,16 @@ PathManager =
                 swampCost: 5,
                 roomCallback: roomName => PathManager.RoomCostMatrix(extensionsPos, spawnerPos)
             });
-        if (path.incomplete)
+        if (pathData.incomplete)
         {
             console.log("Failed to find a path from the spawner to the extensions in " +
-                path.ops.toString() +
+                pathData.ops.toString() +
                 " ops.");
             return null;
         }
-        return path.path.map(roomPos => [roomPos.x, roomPos.y]);
+        let path = pathData.path.map(roomPos => [roomPos.x, roomPos.y]);
+        path.unshift(spawnerRoadPos);
+        return path;
     },
 
     GetSourcePaths: (roomName, extensionsPos, spawnerPos, sourcePositions, spawnerToExtensionsPath) =>
@@ -35,7 +37,7 @@ PathManager =
         {
             let sourceX = sourcePositions[posIter] % ROOM_SIZE;
             let sourceY = ~~(sourcePositions[posIter] / ROOM_SIZE);
-            let path = PathFinder.search(
+            let pathData = PathFinder.search(
                 new RoomPosition(extensionsPos.x, extensionsPos.y, roomName),
                 {
                     pos: new RoomPosition(sourceX, sourceY, roomName),
@@ -49,18 +51,20 @@ PathManager =
                         PathManager.RoomCostMatrix(extensionsPos, spawnerPos, spawnerToExtensionsPath, paths)
                     }
                 });
-            if (path.incomplete)
+            if (pathData.incomplete)
             {
                 console.log("Failed to find a path from the extensions to the source at " +
                     sourceX.toString() +
                     ", " +
                     sourceY.toString() +
                     " in " +
-                    path.ops.toString() +
+                    pathData.ops.toString() +
                     " ops.");
                 paths.push(null);
             }
-            paths.push(path.path.map(roomPos => [roomPos.x, roomPos.y]));
+            let path = pathData.path.map(roomPos => [roomPos.x, roomPos.y]);
+            path.unshift([extensionsPos.x, extensionsPos.y]);
+            paths.push(path);
         }
         return paths;
     },

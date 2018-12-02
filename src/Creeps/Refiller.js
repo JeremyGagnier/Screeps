@@ -12,25 +12,19 @@ let RefillerActions =
     {
         if (creep.fatigue <= 0)
         {
-            creep.memory.walkIndex += 1;
-            let to = Memory.intel[creep.room.name].spawnerToExtensionsPath[creep.memory.walkIndex];
-            if (creep.move(DIRECTIONS[to.y - creep.pos.y + 1][to.x - creep.pos.x + 1]) !== 0)
-            {
-                // Returns nonzero when path is blocked by another creep
-                creep.memory.walkIndex -= 1;
-            }
+            creep.MoveByPath();
         }
     },
 
     Take: (creep) =>
     {
         let containerPos = creep.memory.extensionsPos;
-        let container = room.lookForAt(LOOK_STRUCTURES, containerPos.x, containerPos.y)[0];
+        let container = creep.room.lookForAt(LOOK_STRUCTURES, containerPos.x, containerPos.y)[0];
         creep.withdraw(container, RESOURCE_ENERGY);
         if (!creep.IsEmpty() && creep.fatigue <= 0)
         {
             let to = ExtensionManager.GetWalkPosition(0, creep.memory.extensionsPos);
-            creep.move(DIRECTIONS[to.y - creep.pos.y + 1][to.x - creep.pos.x + 1]);
+            creep.move(DIRECTIONS[to[1] - creep.pos.y + 1][to[0] - creep.pos.x + 1]);
         }
     },
 
@@ -41,7 +35,7 @@ let RefillerActions =
         {
             let fillPos =
                 ExtensionManager.GetTransformedPosition(creep.memory.totalFillIndex, creep.memory.extensionsPos);
-            let maybeExtension = room.lookForAt(LOOK_STRUCTURES, fillPos.x, fillPos.y)[0];
+            let maybeExtension = creep.room.lookForAt(LOOK_STRUCTURES, fillPos.x, fillPos.y)[0];
             if (maybeExtension && !creep.IsEmpty())
             {
                 creep.transfer(maybeExtension, RESOURCE_ENERGY);
@@ -57,7 +51,7 @@ let RefillerActions =
         {
             creep.memory.walkIndex += 1;
             let to = ExtensionManager.GetWalkPosition(creep.memory.walkIndex, creep.memory.extensionsPos);
-            if (creep.move(DIRECTIONS[to.y - creep.pos.y + 1][to.x - creep.pos.x + 1]) === 0)
+            if (creep.move(DIRECTIONS[to[1] - creep.pos.y + 1][to[0] - creep.pos.x + 1]) === 0)
             {
                 creep.memory.fillIndex = 0;
             }
@@ -83,10 +77,15 @@ let Refiller =
 {
     Setup: (creep) =>
     {
+        let roomIntel = Memory.intel[creep.room.name];
+        roomIntel.refiller = creep.name;
         creep.memory.state = STATE_MOVE_TO_PATH;
-        let extensionsPos = Memory.intel[creep.room.name].extensionsPos;
-        creep.memory.extensionsPos = extensionsPos;
-        creep.memory.walkIndex = 0;
+        creep.memory.extensionsPos = roomIntel.extensionsPos;
+
+        creep.memory.path = roomIntel.spawnerToExtensionsPath;
+        creep.memory.walkIndex = 1;
+        creep.memory.lastPos = creep.pos.x + creep.pos.y * ROOM_SIZE;
+
         creep.memory.fillIndex = 0;
         creep.memory.totalFillIndex = 0;
         creep.memory.skipping = false;
@@ -98,10 +97,11 @@ let Refiller =
         Actions[creep.memory.state](creep);
     },
 
-    FromMoveToTake: (creep) =>
+    FromMoveToPathToTake: (creep) =>
     {
         let pos = creep.memory.extensionsPos;
-        let shouldTransition = creep.pos.x == pos[0] && creep.pos.y == pos[1];
+        console.log(pos, creep.pos);
+        let shouldTransition = creep.pos.x == pos.x && creep.pos.y == pos.y;
         if (shouldTransition)
         {
             creep.memory.walkIndex = 0;
@@ -125,7 +125,7 @@ let Refiller =
     FromFillToTake: (creep) =>
     {
         let pos = creep.memory.extensionsPos;
-        let shouldTransition = creep.pos.x == pos[0] && creep.pos.y == pos[1];
+        let shouldTransition = creep.pos.x == pos.x && creep.pos.y == pos.y;
         if (shouldTransition)
         {
             creep.memory.skipCycle = false;
@@ -136,7 +136,7 @@ let Refiller =
 
 
 RefillerFSM = new FiniteStateMachine([
-    new Transition(STATE_MOVE_TO_PATH, STATE_TAKE, Refiller.FromMoveToTake),
+    new Transition(STATE_MOVE_TO_PATH, STATE_TAKE, Refiller.FromMoveToPathToTake),
     new Transition(STATE_TAKE, STATE_FILL, Refiller.FromTakeToFill),
     new Transition(STATE_FILL, STATE_TAKE, Refiller.FromFillToTake)
 ]);

@@ -1,5 +1,6 @@
 require("Constants");
 require("Extends.Creep");
+require("Extends.StructureContainer");
 require("Extends.StructureSpawn");
 require("Util");
 

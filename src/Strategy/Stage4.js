@@ -52,7 +52,7 @@ let Stage4 =
             {
                 if (spawner.IsFull())
                 {
-                    let containerPosition;
+                    let containerPosition = null;
                     if (maybeCreep.memory.buildSourceIndex &&
                         !roomIntel.finishedContainers.includes(
                             roomIntel.harvestPositions[maybeCreep.memory.buildSourceIndex][0]))
@@ -80,7 +80,7 @@ let Stage4 =
                     {
                         maybeCreep.SetBuildJob(maybeContainer.pos.x + ROOM_SIZE * maybeContainer.pos.y);
                     }
-                    else
+                    else if (containerPosition !== null)
                     {
                         roomIntel.finishedContainers.push(containerPosition);
                         let controllerPos = room.controller.pos;
