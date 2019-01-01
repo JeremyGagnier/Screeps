@@ -17,33 +17,25 @@ HaulerActions =
     {
         if (creep.fatigue <= 0)
         {
-            let roomIntel = Memory.intel[creep.room.name];
-            creep.memory.walkIndex += 1;
-            if (creep.memory.walkIndex >= roomIntel.spawnerToExtensionsPath.length)
+            if (creep.memory.walkIndex >= creep.memory.path.length)
             {
                 creep.memory.state = STATE_HAUL;
-                creep.memory.walkIndex = 1;
                 creep.memory.pickingUp = true;
-            }
 
-            let to = roomIntel.spawnerToExtensionsPath[creep.memory.walkIndex];
-            if (creep.move(DIRECTIONS[to.y - creep.pos.y + 1][to.x - creep.pos.x + 1]) !== 0)
-            {
-                creep.memory.walkIndex -= 1;
+                creep.memory.path = Memory.intel[creep.room.name].sourcePaths[creep.memory.sourceIndex];
+                creep.memory.walkIndex = 0;
             }
+            creep.MoveByPath();
         }
     },
 
     Haul: (creep) =>
     {
-        let roomIntel = Memory.intel[creep.room.name];
         if (creep.fatigue <= 0)
         {
             if (creep.memory.pickingUp)
             {
-                creep.memory.walkIndex += 1;
-                let path = roomIntel.sourcePaths[creep.memory.sourceIndex];
-                let to = path[creep.memory.walkIndex];
+                let path = creep.memory.path;
                 if (creep.memory.walkIndex >= path.length - 1)
                 {
                     creep.memory.pickingUp = false;
@@ -59,16 +51,14 @@ HaulerActions =
                     }
                     HaulerActions.Haul(creep);
                 }
-                else if (creep.move(DIRECTIONS[to.y - creep.pos.y + 1][to.x - creep.pos.x + 1]) !== 0)
+                else
                 {
-                    creep.memory.walkIndex -= 1;
+                    creep.MoveByPath();
                 }
             }
             else
             {
-                creep.memory.walkIndex -= 1;
-                let path = roomIntel.sourcePaths[creep.memory.sourceIndex];
-                let to = path[creep.memory.walkIndex];
+                let path = creep.memory.path;
                 if (creep.memory.walkIndex <= 0)
                 {
                     creep.memory.pickingUp = true;
@@ -104,7 +94,10 @@ let Hauler =
     Setup: (creep) =>
     {
         creep.memory.state = STATE_IDLE;
-        creep.memory.walkIndex = 0;
+
+        creep.memory.path = roomIntel.spawnerToExtensionsPath;
+        creep.memory.walkIndex = 1;
+        creep.memory.lastPos = creep.pos.x + creep.pos.y * ROOM_SIZE;
     },
 
     Advance: (creep) =>

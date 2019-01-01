@@ -30,12 +30,16 @@ let RefillerActions =
 
     Fill: (creep) =>
     {
+        if (creep.pos.x + creep.pos.y * ROOM_SIZE !== creep.memory.lastPos)
+        {
+            creep.memory.fillIndex = 0;
+        }
         if (!creep.memory.skipping &&
             creep.memory.fillIndex < ExtensionManager.FILLS_BEFORE_MOVE[creep.memory.walkIndex])
         {
             let fillPos =
                 ExtensionManager.GetTransformedPosition(creep.memory.totalFillIndex, creep.memory.extensionsPos);
-            let maybeExtension = creep.room.lookForAt(LOOK_STRUCTURES, fillPos.x, fillPos.y)[0];
+            let maybeExtension = creep.room.lookForAt(LOOK_STRUCTURES, fillPos[0], fillPos[1])[0];
             if (maybeExtension && !creep.IsEmpty())
             {
                 creep.transfer(maybeExtension, RESOURCE_ENERGY);
@@ -49,18 +53,7 @@ let RefillerActions =
         }
         else if (creep.fatigue <= 0)
         {
-            creep.memory.walkIndex += 1;
-            let to = ExtensionManager.GetWalkPosition(creep.memory.walkIndex, creep.memory.extensionsPos);
-            if (creep.move(DIRECTIONS[to[1] - creep.pos.y + 1][to[0] - creep.pos.x + 1]) === 0)
-            {
-                creep.memory.fillIndex = 0;
-            }
-            else
-            {
-                // Returns nonzero when path is blocked by another creep
-                console.log("Refiller got blocked by a creep, this shouldn't happen!");
-                creep.memory.walkIndex -= 1;
-            }
+            creep.MoveByPath();
         }
     }
 }
@@ -100,11 +93,11 @@ let Refiller =
     FromMoveToPathToTake: (creep) =>
     {
         let pos = creep.memory.extensionsPos;
-        console.log(pos, creep.pos);
         let shouldTransition = creep.pos.x == pos.x && creep.pos.y == pos.y;
         if (shouldTransition)
         {
             creep.memory.walkIndex = 0;
+            creep.memory.path = ExtensionManager.GetWalkPath(pos);
         }
         return shouldTransition;
     },
@@ -128,7 +121,7 @@ let Refiller =
         let shouldTransition = creep.pos.x == pos.x && creep.pos.y == pos.y;
         if (shouldTransition)
         {
-            creep.memory.skipCycle = false;
+            creep.memory.skipping = false;
         }
         return shouldTransition;
     }

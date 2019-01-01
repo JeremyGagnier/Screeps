@@ -60,6 +60,11 @@ ExtensionManager =
         return ExtensionManager.__TransformPos(pos, extensionsPos);
     },
 
+    GetWalkPath: (extensionsPos) =>
+    {
+        return ExtensionManager.WALK_POSITIONS.map((pos) => ExtensionManager.__TransformPos(pos, extensionsPos));
+    },
+
     GetTransformedPosition: (posIndex, extensionsPos) =>
     {
         let pos = ExtensionManager.POSITIONS[posIndex];

@@ -1,4 +1,4 @@
 StructureContainer.prototype.IsFull = function()
 {
-    return this.store === this.storeCapacity;
+    return _.sum(this.store) === this.storeCapacity;
 }
