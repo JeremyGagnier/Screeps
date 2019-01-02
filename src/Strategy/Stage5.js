@@ -154,26 +154,21 @@ Stage5 =
         // First try and spawn a refiller
         if (roomIntel.refiller === null)
         {
-            if (spawner.energy >= 300)
+            let body = [CARRY, CARRY, CARRY, CARRY, CARRY, MOVE];
+            if (spawner.CanSpawn(body))
             {
-                spawner.spawnCreep(
-                    [CARRY, CARRY, CARRY, CARRY, CARRY, MOVE],
-                    Memory.strategy.creepCount.toString(),
-                    {
-                        memory: {new: true, type: CREEP_REFILLER},
-                        directions: SpawnManager.GetSpawnDirection(roomIntel.spawnerPos)
-                    });
+                spawner.Spawn(body, CREEP_REFILLER);
             }
         }
         // Spawn hauler before harvester
-        else if (haulJobs.length === harvestJobs.length)
+        else if (haulJobs.length === harvestJobs.length && haulJobs.length !== 0)
         {
             // Minus 4 because the two endpoints are containers.
             let roundTripTicks = roomIntel.sourcePaths[haulJobs[0]].length * 2 - 4;
             // Cap at 7 because it will need 4 move and the max cost is 550.
-            let carrySize = Math.max(roundTripTicks / 5 + 1, 7);
+            let carrySize = Math.min(~~(roundTripTicks / 5) + 1, 7);
             // Defined so that the hauler can move one square per tick.
-            let moveSize = carrySize / 2 + carrySize % 2;
+            let moveSize = ~~(carrySize / 2) + carrySize % 2;
             let body = [];
             // Put the final move and carry at the end since it's more efficient.
             for (let i = 1; i < carrySize; ++i)
@@ -186,28 +181,17 @@ Stage5 =
             }
             body.push(CARRY);
             body.push(MOVE);
-            if (spawner.energy >= (carrySize + moveSize) * 50)
+            if (spawner.CanSpawn(body))
             {
-                spawner.spawnCreep(
-                    body,
-                    Memory.strategy.creepCount.toString(),
-                    {
-                        memory: {new: true, type: CREEP_HAULER},
-                        directions: SpawnManager.GetSpawnDirection(roomIntel.spawnerPos)
-                    });
+                spawner.Spawn(body, CREEP_HAULER);
             }
         }
-        else
+        else if (harvestJobs.length !== 0)
         {
-            if (spawner.energy >= 550)
+            let body = [WORK, WORK, WORK, WORK, WORK, MOVE];
+            if (spawner.CanSpawn(body))
             {
-                spawner.spawnCreep(
-                    [WORK, WORK, WORK, WORK, WORK, MOVE],
-                    Memory.strategy.creepCount.toString(),
-                    {
-                        memory: {new: true, type: CREEP_MINER},
-                        directions: SpawnManager.GetSpawnDirection(roomIntel.spawnerPos)
-                    });
+                spawner.Spawn(body, CREEP_MINER);
             }
         }
 

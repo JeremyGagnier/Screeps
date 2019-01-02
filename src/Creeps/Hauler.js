@@ -5,8 +5,7 @@ const STATE_IDLE = 0;
 const STATE_MOVE_TO_PATH = 1;
 const STATE_HAUL = 2;
 
-let HaulerActions;
-HaulerActions =
+let HaulerActions =
 {
     Idle: (creep) =>
     {
@@ -19,11 +18,7 @@ HaulerActions =
         {
             if (creep.memory.walkIndex >= creep.memory.path.length)
             {
-                creep.memory.state = STATE_HAUL;
-                creep.memory.pickingUp = true;
-
-                creep.memory.path = Memory.intel[creep.room.name].sourcePaths[creep.memory.sourceIndex];
-                creep.memory.walkIndex = 0;
+                creep.memory.state = STATE_IDLE;
             }
             creep.MoveByPath();
         }
@@ -33,14 +28,14 @@ HaulerActions =
     {
         if (creep.fatigue <= 0)
         {
+            let path = creep.memory.path;
             if (creep.memory.pickingUp)
             {
-                let path = creep.memory.path;
-                if (creep.memory.walkIndex >= path.length - 1)
+                if (creep.memory.walkIndex >= path.length - 2)
                 {
                     creep.memory.pickingUp = false;
-                    creep.memory.walkIndex = path.length - 3;
-                    let container = creep.room.lookForAt(LOOK_STRUCTURES, to[0], to[1])[0];
+                    let containerPos = path[path.length - 1];
+                    let container = creep.room.lookForAt(LOOK_STRUCTURES, containerPos[0], containerPos[1])[0];
                     if (container)
                     {
                         creep.withdraw(container, RESOURCE_ENERGY);
@@ -49,21 +44,15 @@ HaulerActions =
                     {
                         console.log("Hauler didn't end up next to a container for withdraw")
                     }
-                    HaulerActions.Haul(creep);
-                }
-                else
-                {
-                    creep.MoveByPath();
                 }
             }
             else
             {
-                let path = creep.memory.path;
-                if (creep.memory.walkIndex <= 0)
+                if (creep.memory.walkIndex <= 1)
                 {
                     creep.memory.pickingUp = true;
-                    creep.memory.walkIndex = 2;
-                    let container = creep.room.lookForAt(LOOK_STRUCTURES, to[0], to[1])[0];
+                    let containerPos = path[0];
+                    let container = creep.room.lookForAt(LOOK_STRUCTURES, containerPos[0], containerPos[1])[0];
                     if (container)
                     {
                         creep.transfer(container, RESOURCE_ENERGY);
@@ -72,13 +61,9 @@ HaulerActions =
                     {
                         console.log("Hauler didn't end up next to a container for deposit")
                     }
-                    HaulerActions.Haul(creep);
-                }
-                else if (creep.move(DIRECTIONS[to.y - creep.pos.y + 1][to.x - creep.pos.x + 1]) !== 0)
-                {
-                    creep.memory.walkIndex += 1;
                 }
             }
+            creep.MoveByPath(creep.memory.pickingUp);
         }
     }
 }
@@ -93,10 +78,10 @@ let Hauler =
 {
     Setup: (creep) =>
     {
-        creep.memory.state = STATE_IDLE;
+        creep.memory.state = STATE_MOVE_TO_PATH;
 
-        creep.memory.path = roomIntel.spawnerToExtensionsPath;
-        creep.memory.walkIndex = 1;
+        creep.memory.path = Memory.intel[creep.room.name].spawnerToExtensionsPath;
+        creep.memory.walkIndex = 0;
         creep.memory.lastPos = creep.pos.x + creep.pos.y * ROOM_SIZE;
     },
 
@@ -107,7 +92,10 @@ let Hauler =
 
     SetDepositJob: (creep, sourceIndex) =>
     {
-        creep.memory.sourceIndex = sourceIndex;
+        creep.memory.state = STATE_HAUL;
+        creep.memory.pickingUp = true;
+        creep.memory.walkIndex = 1;
+        creep.memory.path = Memory.intel[creep.room.name].sourcePaths[sourceIndex];
     }
 }
 

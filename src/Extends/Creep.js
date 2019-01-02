@@ -29,22 +29,22 @@ Creep.prototype.Advance = function()
 Creep.prototype.SetHarvestJob = function(harvestPos, sourcePos)
 {
     CreepTypes[this.memory.type].SetHarvestJob(this, harvestPos, sourcePos);
-}
+};
 
 Creep.prototype.SetDepositJob = function(depositPos, adjacentDist)
 {
     CreepTypes[this.memory.type].SetDepositJob(this, depositPos, adjacentDist);
-}
+};
 
 Creep.prototype.SetBuildJob = function(getEnergyPos, buildPos)
 {
     CreepTypes[this.memory.type].SetBuildJob(this, getEnergyPos, buildPos);
-}
+};
 
 Creep.prototype.SetDieJob = function(diePos)
 {
     CreepTypes[this.memory.type].SetDieJob(this, diePos);
-}
+};
 
 Creep.prototype.Move = function()
 {
@@ -117,16 +117,16 @@ Creep.prototype.Repair = function()
 Creep.prototype.IsFull = function()
 {
     return this.carry[RESOURCE_ENERGY] === this.carryCapacity;
-}
+};
 
 Creep.prototype.IsEmpty = function()
 {
     return this.carry[RESOURCE_ENERGY] === 0;
-}
+};
 
 Creep.prototype.DistanceToTarget = function()
 {
     return Math.max(
         Math.abs(this.pos.x - this.memory.targetPos % ROOM_SIZE),
         Math.abs(this.pos.y - ~~(this.memory.targetPos / ROOM_SIZE)));
-}
+};

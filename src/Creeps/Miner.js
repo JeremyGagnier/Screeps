@@ -14,11 +14,11 @@ let MinerActions =
         if (creep.fatigue <= 0)
         {
             let roomIntel = Memory.intel[creep.room.name];
-            creep.memory.walkIndex += 1;
             if (creep.memory.toExtensions && creep.memory.walkIndex >= roomIntel.spawnerToExtensionsPath.length)
             {
                 creep.memory.toExtensions = false;
                 creep.memory.walkIndex = 1;
+                creep.memory.path = roomIntel.sourcePaths[creep.memory.sourceIndex];
             }
             if (creep.memory.walkIndex >= roomIntel.sourcePaths[creep.memory.sourceIndex].length)
             {
@@ -26,19 +26,7 @@ let MinerActions =
             }
             else
             {
-                let to;
-                if (creep.memory.toExtensions)
-                {
-                    to = roomIntel.spawnerToExtensionsPath[creep.memory.walkIndex];
-                }
-                else
-                {
-                    to = roomIntel.sourcePaths[creep.memory.sourceIndex][creep.memory.walkIndex];
-                }
-                if (creep.move(DIRECTIONS[to.y - creep.pos.y + 1][to.x - creep.pos.x + 1]) !== 0)
-                {
-                    creep.memory.walkIndex -= 1;
-                }
+                creep.MoveByPath();
             }
         }
     },
@@ -70,6 +58,7 @@ let Miner =
     {
         creep.memory.state = STATE_IDLE;
         creep.memory.walkIndex = 0;
+        creep.memory.path = Memory.intel[creep.room.name].spawnerToExtensionsPath;
         creep.memory.toExtensions = true;
     },
 
