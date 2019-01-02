@@ -196,6 +196,14 @@ Stage5 =
         }
 
         let shouldSpawnCreep = StrategyUtil.AssignHarvestJobs(roomIntel, initialHarvestJobs, stillIdleCreeps);
+
+        if (stillIdleCreeps.length > 0)
+        {
+            let extensionPos = roomIntel.extensionsPos;
+            let diePos = extensionPos.x + ROOM_SIZE * extensionPos.y;
+            stillIdleCreeps.map(creep => creep.SetDieJob(diePos));
+        }
+
         let creepsCount = Object.keys(Game.creeps).length;
         StrategyUtil.MaybeSpawnInitialCreep(
             shouldSpawnCreep && creepsCount < maxHarvestJobs,

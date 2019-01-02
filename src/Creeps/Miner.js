@@ -1,6 +1,7 @@
 const STATE_IDLE = 0;
-const STATE_MOVE = 1;
-const STATE_MINE = 2;
+const STATE_MOVE_TO_PATH = 1;
+const STATE_MOVE_TO_SOURCE = 2;
+const STATE_MINE = 3;
 
 let MinerActions =
 {
@@ -9,18 +10,26 @@ let MinerActions =
         Memory.strategy.idleCreeps.push(creep.name);
     },
 
-    Move: (creep) =>
+    MoveToPath: (creep) =>
     {
         if (creep.fatigue <= 0)
         {
-            let roomIntel = Memory.intel[creep.room.name];
-            if (creep.memory.toExtensions && creep.memory.walkIndex >= roomIntel.spawnerToExtensionsPath.length)
+            if (creep.memory.walkIndex >= creep.memory.path.length)
             {
-                creep.memory.toExtensions = false;
-                creep.memory.walkIndex = 1;
-                creep.memory.path = roomIntel.sourcePaths[creep.memory.sourceIndex];
+                creep.memory.state = STATE_IDLE;
             }
-            if (creep.memory.walkIndex >= roomIntel.sourcePaths[creep.memory.sourceIndex].length)
+            else
+            {
+                creep.MoveByPath();
+            }
+        }
+    },
+
+    MoveToSource: (creep) =>
+    {
+        if (creep.fatigue <= 0)
+        {
+            if (creep.memory.walkIndex >= creep.memory.path.length)
             {
                 creep.memory.state = STATE_MINE;
             }
@@ -48,7 +57,8 @@ let MinerActions =
 
 let Actions = [
     MinerActions.Idle,
-    MinerActions.Move,
+    MinerActions.MoveToPath,
+    MinerActions.MoveToSource,
     MinerActions.Mine
 ];
 
@@ -56,10 +66,9 @@ let Miner =
 {
     Setup: (creep) =>
     {
-        creep.memory.state = STATE_IDLE;
-        creep.memory.walkIndex = 0;
+        creep.memory.state = STATE_MOVE_TO_PATH;
+        creep.memory.walkIndex = 1;
         creep.memory.path = Memory.intel[creep.room.name].spawnerToExtensionsPath;
-        creep.memory.toExtensions = true;
     },
 
     Advance: (creep) =>
@@ -69,8 +78,9 @@ let Miner =
 
     SetHarvestJob: (creep, harvestPos, sourceIndex) =>
     {
-        creep.memory.state = STATE_MOVE;
-        creep.memory.sourceIndex = sourceIndex;
+        creep.memory.state = STATE_MOVE_TO_SOURCE;
+        creep.memory.walkIndex = 1;
+        creep.memory.path = Memory.intel[creep.room.name].sourcePaths[sourceIndex];
         creep.memory.harvestPos = harvestPos;
     }
 }

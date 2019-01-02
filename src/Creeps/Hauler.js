@@ -20,7 +20,10 @@ let HaulerActions =
             {
                 creep.memory.state = STATE_IDLE;
             }
-            creep.MoveByPath();
+            else
+            {
+                creep.MoveByPath();
+            }
         }
     },
 
@@ -79,10 +82,9 @@ let Hauler =
     Setup: (creep) =>
     {
         creep.memory.state = STATE_MOVE_TO_PATH;
-
-        creep.memory.path = Memory.intel[creep.room.name].spawnerToExtensionsPath;
-        creep.memory.walkIndex = 0;
         creep.memory.lastPos = creep.pos.x + creep.pos.y * ROOM_SIZE;
+        creep.memory.walkIndex = 1;
+        creep.memory.path = Memory.intel[creep.room.name].spawnerToExtensionsPath;
     },
 
     Advance: (creep) =>

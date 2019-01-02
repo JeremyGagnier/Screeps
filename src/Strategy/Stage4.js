@@ -136,11 +136,10 @@ let Stage4 =
             creep.memory.buildHarvestIndex = harvestPosIndex;
         }
 
-        let extensionPos = Memory.intel[room.name].extensionsPos;
-        let diePos = extensionPos.x + ROOM_SIZE * extensionPos.y;
         if (stillIdleCreeps.length > 0)
         {
-            stillIdleCreeps.pop()
+            let extensionPos = roomIntel.extensionsPos;
+            let diePos = extensionPos.x + ROOM_SIZE * extensionPos.y;
             stillIdleCreeps.map(creep => creep.SetDieJob(diePos));
         }
 
