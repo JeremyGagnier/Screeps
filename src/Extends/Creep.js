@@ -68,14 +68,18 @@ Creep.prototype.MoveByPath = function(forward = true)
         this.memory.lastPos = currentPos;
     }
     let to = this.memory.path[this.memory.walkIndex];
-    let direction = DIRECTIONS[to[1] - this.pos.y + 1][to[0] - this.pos.x + 1];
-    if (direction)
+    // Only walk if there's more path
+    if (to)
     {
-        this.move(direction);
-    }
-    else
-    {
-        console.log("Creep " + this.name + " was not adjacent to its next path position");
+        let direction = DIRECTIONS[to[1] - this.pos.y + 1][to[0] - this.pos.x + 1];
+        if (direction)
+        {
+            this.move(direction);
+        }
+        else
+        {
+            console.log("Creep " + this.name + " was not adjacent to its next path position");
+        }
     }
 };
 

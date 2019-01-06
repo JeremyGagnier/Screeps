@@ -82,8 +82,7 @@ let Hauler =
     Setup: (creep) =>
     {
         creep.memory.state = STATE_MOVE_TO_PATH;
-        creep.memory.lastPos = creep.pos.x + creep.pos.y * ROOM_SIZE;
-        creep.memory.walkIndex = 1;
+        creep.memory.walkIndex = 0;
         creep.memory.path = Memory.intel[creep.room.name].spawnerToExtensionsPath;
     },
 

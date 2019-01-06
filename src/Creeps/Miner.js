@@ -67,7 +67,7 @@ let Miner =
     Setup: (creep) =>
     {
         creep.memory.state = STATE_MOVE_TO_PATH;
-        creep.memory.walkIndex = 1;
+        creep.memory.walkIndex = 0;
         creep.memory.path = Memory.intel[creep.room.name].spawnerToExtensionsPath;
     },
 

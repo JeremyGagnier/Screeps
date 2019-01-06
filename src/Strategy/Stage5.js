@@ -72,7 +72,7 @@ Stage5 =
         let initialHarvestJobs = [];
         for (let sourcePosIter in roomIntel.sourcePositions)
         {
-            if (roomIntel.haulers[sourcePosIter] !== null)
+            if (roomIntel.harvesters[sourcePosIter] !== null)
             {
                 continue;
             }
