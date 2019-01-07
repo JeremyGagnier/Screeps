@@ -5,20 +5,8 @@ const StrategyUtil = require("Strategy.StrategyUtil");
 /**
  * Stage 5s purpose is to construct a filler for the extensions and one miner and hauler for each source.
  */
-let Stage5;
-Stage5 =
+let Stage5 =
 {
-    Initialize: () =>
-    {
-        let room = Game.rooms[Memory.strategy.roomName];
-        let roomIntel = Memory.intel[Memory.strategy.roomName];
-        PathManager.PlaceRoads(room, roomIntel.spawnerToExtensionsPath);
-        for (let pathIter in roomIntel.sourcePaths)
-        {
-            PathManager.PlaceRoads(room, roomIntel.sourcePaths[pathIter]);
-        }
-    },
-
     Advance: () =>
     {
         let roomName = Memory.strategy.roomName;
@@ -154,45 +142,16 @@ Stage5 =
         // First try and spawn a refiller
         if (roomIntel.refiller === null)
         {
-            let body = [CARRY, CARRY, CARRY, CARRY, CARRY, MOVE];
-            if (spawner.CanSpawn(body))
-            {
-                spawner.Spawn(body, CREEP_REFILLER);
-            }
+            spawner.TrySpawn([CARRY, CARRY, CARRY, CARRY, CARRY, MOVE], CREEP_REFILLER);
         }
         // Spawn hauler before harvester
         else if (haulJobs.length === harvestJobs.length && haulJobs.length !== 0)
         {
-            // Minus 4 because the two endpoints are containers.
-            let roundTripTicks = roomIntel.sourcePaths[haulJobs[0]].length * 2 - 4;
-            // Cap at 7 because it will need 4 move and the max cost is 550.
-            let carrySize = Math.min(~~(roundTripTicks / 5) + 1, 7);
-            // Defined so that the hauler can move one square per tick.
-            let moveSize = ~~(carrySize / 2) + carrySize % 2;
-            let body = [];
-            // Put the final move and carry at the end since it's more efficient.
-            for (let i = 1; i < carrySize; ++i)
-            {
-                body.push(CARRY);
-            }
-            for (let i = 1; i < moveSize; ++i)
-            {
-                body.push(MOVE);
-            }
-            body.push(CARRY);
-            body.push(MOVE);
-            if (spawner.CanSpawn(body))
-            {
-                spawner.Spawn(body, CREEP_HAULER);
-            }
+            spawner.TrySpawn(StrategyUtil.GetHaulerBody(roomIntel.sourcePaths[haulJobs[0]].length, 550), CREEP_HAULER);
         }
         else if (harvestJobs.length !== 0)
         {
-            let body = [WORK, WORK, WORK, WORK, WORK, MOVE];
-            if (spawner.CanSpawn(body))
-            {
-                spawner.Spawn(body, CREEP_MINER);
-            }
+            spawner.TrySpawn([WORK, WORK, WORK, WORK, WORK, MOVE], CREEP_MINER);
         }
 
         let shouldSpawnCreep = StrategyUtil.AssignHarvestJobs(roomIntel, initialHarvestJobs, stillIdleCreeps);
@@ -214,12 +173,7 @@ Stage5 =
     FromStage4ToStage5: () =>
     {
         let roomIntel = Memory.intel[Memory.strategy.roomName];
-        let shouldTransition = roomIntel.finishedContainers.length >= roomIntel.harvestPositions.length;
-        if (shouldTransition)
-        {
-            Stage5.Initialize();
-        }
-        return shouldTransition;
+        return roomIntel.finishedContainers.length >= roomIntel.harvestPositions.length;
     }
 };
 

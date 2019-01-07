@@ -22,6 +22,7 @@ ExtensionManager =
     ],
 
     WALK_POSITIONS: [
+        [ 0,  0],
         [-1, -1],
         [-2, -2],
         [-1, -3],
@@ -43,7 +44,7 @@ ExtensionManager =
         [ 0,  0]
     ],
 
-    FILLS_BEFORE_MOVE: [6, 4, 3, 4, 3, 4, 3, 4, 2, 4, 4, 4, 4, 2, 4, 4, 1, 0, 0],
+    FILLS_BEFORE_MOVE: [-1, 6, 4, 3, 4, 3, 4, 3, 4, 2, 4, 4, 4, 4, 2, 4, 4, 1, 0],
 
     PlaceExtensions: (room, startIndex, endIndex, extensionsPos) =>
     {

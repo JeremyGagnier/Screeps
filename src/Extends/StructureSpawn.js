@@ -21,3 +21,11 @@ StructureSpawn.prototype.Spawn = function(body, creepType)
     let creepName = Memory.strategy.creepCount.toString();
     return this.spawnCreep(body, creepName, params);
 };
+
+StructureSpawn.prototype.TrySpawn = function(body, creepType)
+{
+    if (this.CanSpawn(body))
+    {
+        this.Spawn(body, creepType);
+    }
+};

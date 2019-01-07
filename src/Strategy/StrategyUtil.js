@@ -90,6 +90,49 @@ let StrategyUtil =
                 Memory.strategy.creepCount.toString(),
                 {memory: {new: true, type: CREEP_INITIAL}});
         }
+    },
+
+    GetHaulerBody: (pathLength, maxCost) =>
+    {
+        // Minus 4 because the two endpoints are containers.
+        let roundTripTicks = pathLength * 2 - 4;
+        // Floor divide max cost by 75 since each carry needs at least half a move.
+        let carrySize = Math.min(~~(roundTripTicks / 5) + 1, ~~(maxCost / 75));
+        let moveSize = ~~(carrySize / 2) + carrySize % 2;
+        let body = [];
+        // Put the final move and carry at the end since it's more efficient.
+        for (let i = 1; i < carrySize; ++i)
+        {
+            body.push(CARRY);
+        }
+        for (let i = 1; i < moveSize; ++i)
+        {
+            body.push(MOVE);
+        }
+        body.push(CARRY);
+        body.push(MOVE);
+        
+        return body;
+    },
+
+    SetNumBuilders: (roomIntel, numBuilders) =>
+    {
+        if (numBuilders > roomIntel.builders.length)
+        {
+            let extensionPos = roomIntel.extensionsPos;
+            let diePos = extensionPos.x + ROOM_SIZE * extensionPos.y;
+            while (numBuilders > roomIntel.builders.length)
+            {
+                Game.creeps[roomIntel.builders.pop()].SetDieJob(diePos);
+            }
+        }
+        else
+        {
+            while (numBuilders < roomIntel.builders.length)
+            {
+                roomIntel.builders.push(null);
+            }
+        }
     }
 }
 
