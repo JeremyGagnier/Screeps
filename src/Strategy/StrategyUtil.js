@@ -117,7 +117,7 @@ let StrategyUtil =
 
     SetNumBuilders: (roomIntel, numBuilders) =>
     {
-        if (numBuilders > roomIntel.builders.length)
+        if (numBuilders < roomIntel.builders.length)
         {
             let extensionPos = roomIntel.extensionsPos;
             let diePos = extensionPos.x + ROOM_SIZE * extensionPos.y;
@@ -128,7 +128,7 @@ let StrategyUtil =
         }
         else
         {
-            while (numBuilders < roomIntel.builders.length)
+            while (numBuilders > roomIntel.builders.length)
             {
                 roomIntel.builders.push(null);
             }

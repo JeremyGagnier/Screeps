@@ -15,7 +15,7 @@ const STATE_STAGE_2 = 1;
 const STATE_STAGE_3 = 2;
 const STATE_STAGE_4 = 3;
 const STATE_STAGE_5 = 4;
-const STAGE_STAGE_6 = 5;
+const STATE_STAGE_6 = 5;
 
 let StrategyFSM;
 
@@ -44,7 +44,7 @@ StrategyFSM = new FiniteStateMachine(
     new Transition(STATE_STAGE_2, STATE_STAGE_3, Stage3.FromStage2ToStage3),
     new Transition(STATE_STAGE_3, STATE_STAGE_4, Stage4.FromStage3ToStage4),
     new Transition(STATE_STAGE_4, STATE_STAGE_5, Stage5.FromStage4ToStage5),
-    new Transition(STAGE_STAGE_5, STAGE_STAGE_6, Stage6.FromStage5ToStage6)
+    new Transition(STATE_STAGE_5, STATE_STAGE_6, Stage6.FromStage5ToStage6)
 ]);
 
 module.exports = Strategy;

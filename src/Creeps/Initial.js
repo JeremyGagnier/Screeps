@@ -9,6 +9,12 @@ const STATE_DIE = 4;
 const STATE_BUILD = 5;
 const STATE_REPAIR = 6;     // Unused
 
+const JOB_HARVEST = 0;
+const JOB_HAUL = 1;
+const JOB_BUILD = 2;
+const JOB_REPAIR = 3;
+const JOB_DIE = 4;
+
 let InitialActions =
 {
     Idle: (creep) =>
@@ -108,15 +114,12 @@ let Initial =
 
     FromMoveToBuild: (creep) =>
     {
-        return creep.memory.jobType === JOB_BUILD &&
-            creep.DistanceToTarget() <= 3;
+        return creep.memory.jobType === JOB_BUILD && creep.DistanceToTarget() <= 3;
     },
 
     FromMoveToRepair: (creep) =>
     {
-        return creep.memory.jobType === JOB_REPAIR &&
-            !creep.IsEmpty() &&
-            creep.DistanceToTarget() <= 3;
+        return creep.memory.jobType === JOB_REPAIR && !creep.IsEmpty() && creep.DistanceToTarget() <= 3;
     },
 
     FromDepositToIdle: (creep) =>

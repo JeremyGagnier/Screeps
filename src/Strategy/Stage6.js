@@ -1,6 +1,7 @@
 const PathManager = require("PathManager");
 const SpawnManager = require("SpawnManager");
 const StrategyUtil = require("Strategy.StrategyUtil");
+const Builder = require("Creeps.Builder");
 
 /**
  * Stage 6s purpose is to convert the rooms energy into control points as efficiently as possible.
@@ -109,6 +110,10 @@ Stage6 =
                     roomIntel.builders[jobIndex] = maybeCreep.name;
                     // TODO: Builders will need to be assigned road building, road maintenance, and controller
                     //       upgrading jobs.
+                    Builder.SetBuildPathJob(
+                        maybeCreep,
+                        roomIntel.extensionsPos.x + roomIntel.extensionsPos.y * ROOM_SIZE,
+                        roomIntel.sourcePaths[jobIndex]);
                     break;
             }
             maybeCreep = StrategyUtil.GetNextIdleCreep();
@@ -136,8 +141,8 @@ Stage6 =
     {
         let roomIntel = Memory.intel[Memory.strategy.roomName];
         let shouldTransition = roomIntel.refiller !== null &&
-            !roomIntel.haulers.find((x) => x === null) &&
-            !roomIntel.harvesters.find((x) => x === null);
+            !roomIntel.haulers.includes(null) &&
+            !roomIntel.harvesters.includes(null);
         if (shouldTransition)
         {
             Stage6.Initialize();
@@ -145,3 +150,5 @@ Stage6 =
         return shouldTransition;
     }
 }
+
+module.exports = Stage6;

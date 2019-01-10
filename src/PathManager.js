@@ -116,7 +116,7 @@ PathManager =
 
     PlaceRoads: (room, path) =>
     {
-        for (let posIter in path)
+        for (let posIter = 1; posIter < path.length - 1; ++posIter)
         {
             let pos = path[posIter];
             room.createConstructionSite(pos[0], pos[1], STRUCTURE_ROAD);
