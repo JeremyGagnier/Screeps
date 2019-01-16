@@ -14,12 +14,6 @@ const JOB_REPAIR_PATH = 2
 const JOB_UPGRADE = 3
 const JOB_DIE = 4
 
-function SwapCreepTarget (creep) {
-  let tmp = creep.memory.targetPos
-  creep.memory.targetPos = creep.memory.targetPos2
-  creep.memory.targetPos2 = tmp
-}
-
 // Builders need to be able to construct buildings in arbitrary locations, upgrade the room controller, and build and
 // maintain roads and containers along source paths, the spawner path, and the room controller path. They must be able
 // to collect resources from a specified location.
@@ -78,7 +72,11 @@ let Builder =
       let shouldTransition = creep.IsEmpty() && creep.DistanceToTarget() <= 1
       if (shouldTransition) {
         creep.Withdraw()
-        SwapCreepTarget(creep)
+        if (creep.memory.targetPos === creep.memory.withdrawPos) {
+          creep.memory.targetPos = creep.memory.jobPos
+        } else {
+          creep.memory.targetPos = creep.memory.withdrawPos
+        }
       }
       return shouldTransition
     },
@@ -122,25 +120,26 @@ let Builder =
 
     FromBuildToMove: (creep) => {
       let shouldTransition = creep.memory.jobType === JOB_BUILD && creep.IsEmpty()
-      if (creep.memory.jobType === JOB_BUILD_PATH && creep.IsEmpty()) {
-        if (creep.room.lookForAt(
+      let isFinished = !creep.room.lookForAt(
         LOOK_CONSTRUCTION_SITES,
         creep.memory.targetPos % ROOM_SIZE,
-        ~~(creep.memory.targetPos / ROOM_SIZE))[0]) {
+        ~~(creep.memory.targetPos / ROOM_SIZE))[0]
+      if (creep.memory.jobType === JOB_BUILD_PATH) {
+        if (!isFinished && creep.IsEmpty()) {
           shouldTransition = true
-        } else {
+        } else if (isFinished) {
           for (let pathIter in creep.memory.path) {
             let pos = creep.memory.path[pathIter]
             if (creep.room.lookForAt(LOOK_CONSTRUCTION_SITES, pos[0], pos[1])[0]) {
               shouldTransition = true
-              creep.memory.targetPos = pos[0] + pos[1] * ROOM_SIZE
+              creep.memory.jobPos = pos[0] + pos[1] * ROOM_SIZE
               break
             }
           }
         }
       }
       if (shouldTransition) {
-        SwapCreepTarget(creep)
+        creep.memory.targetPos = creep.memory.withdrawPos
       }
       return shouldTransition
     },
@@ -148,9 +147,9 @@ let Builder =
     FromRepairToIdle: (creep) => {
       let shouldTransition = false
       let isFinished = creep.room.lookForAt(
-      LOOK_STRUCTURES,
-      creep.memory.targetPos % ROOM_SIZE,
-      ~~(creep.memory.targetPos / ROOM_SIZE))[0].IsHealthy()
+        LOOK_STRUCTURES,
+        creep.memory.targetPos % ROOM_SIZE,
+        ~~(creep.memory.targetPos / ROOM_SIZE))[0].IsHealthy()
       if (creep.memory.jobType === JOB_REPAIR_PATH && isFinished) {
         shouldTransition = true
         for (let pathIter in creep.memory.path) {
@@ -177,14 +176,14 @@ let Builder =
             let pos = creep.memory.path[pathIter]
             if (creep.room.lookForAt(LOOK_STRUCTURES, pos[0], pos[1])[0].NeedsRepair()) {
               shouldTransition = true
-              creep.memory.targetPos = pos[0] + pos[1] * ROOM_SIZE
+              creep.memory.jobPos = pos[0] + pos[1] * ROOM_SIZE
               break
             }
           }
         }
       }
       if (shouldTransition) {
-        SwapCreepTarget(creep)
+        creep.memory.targetPos = creep.memory.withdrawPos
       }
       return shouldTransition
     },
@@ -196,7 +195,7 @@ let Builder =
     FromUpgradeToMove: (creep) => {
       let shouldTransition = creep.IsEmpty()
       if (shouldTransition) {
-        SwapCreepTarget(creep)
+        creep.memory.targetPos = creep.memory.withdrawPos
       }
       return shouldTransition
     },
@@ -204,18 +203,20 @@ let Builder =
     SetBuildJob: (creep, withdrawPos, buildPos) => {
       creep.memory.state = STATE_MOVE
       creep.memory.jobType = JOB_BUILD
+      creep.memory.withdrawPos = withdrawPos
       creep.memory.targetPos = withdrawPos
-      creep.memory.targetPos2 = buildPos
+      creep.memory.jobPos = buildPos
     },
 
     SetBuildPathJob: (creep, withdrawPos, path) => {
       creep.memory.state = STATE_MOVE
       creep.memory.jobType = JOB_BUILD_PATH
+      creep.memory.withdrawPos = withdrawPos
       creep.memory.targetPos = withdrawPos
       for (let pathIter in path) {
         let pos = path[pathIter]
         if (creep.room.lookForAt(LOOK_CONSTRUCTION_SITES, pos[0], pos[1])[0]) {
-          creep.memory.targetPos2 = pos[0] + pos[1] * ROOM_SIZE
+          creep.memory.jobPos = pos[0] + pos[1] * ROOM_SIZE
           break
         }
       }
@@ -225,11 +226,12 @@ let Builder =
     SetRepairPathJob: (creep, withdrawPos, path) => {
       creep.memory.state = STATE_MOVE
       creep.memory.jobType = JOB_REPAIR_PATH
+      creep.memory.withdrawPos = withdrawPos
       creep.memory.targetPos = withdrawPos
       for (let pathIter in path) {
         let pos = path[pathIter]
         if (creep.room.lookForAt(LOOK_STRUCTURES, pos[0], pos[1])[0].NeedsRepair()) {
-          creep.memory.targetPos2 = pos[0] + pos[1] * ROOM_SIZE
+          creep.memory.jobPos = pos[0] + pos[1] * ROOM_SIZE
           break
         }
       }
@@ -239,8 +241,9 @@ let Builder =
     SetUpgradeJob: (creep, withdrawPos) => {
       creep.memory.state = STATE_MOVE
       creep.memory.jobType = JOB_UPGRADE
+      creep.memory.withdrawPos = withdrawPos
       creep.memory.targetPos = withdrawPos
-      creep.memory.targetPos2 = creep.room.controller.pos.x + creep.room.controller.pos.y * ROOM_SIZE
+      creep.memory.jobPos = creep.room.controller.pos.x + creep.room.controller.pos.y * ROOM_SIZE
     },
 
     SetDieJob: (creep, diePos) => {
