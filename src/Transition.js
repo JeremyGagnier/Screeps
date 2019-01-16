@@ -1,16 +1,13 @@
-class Transition
-{
-    constructor(from, to, Condition)
-    {
-        this.from = from;
-        this.to = to;
-        this.Condition = Condition;
-    }
+class Transition {
+  constructor (from, to, Condition) {
+    this.from = from
+    this.to = to
+    this.Condition = Condition
+  }
 
-    CanTransition(args)
-    {
-        return this.Condition(args);
-    }
+  CanTransition (args) {
+    return this.Condition(args)
+  }
 }
 
-module.exports = Transition;
+module.exports = Transition

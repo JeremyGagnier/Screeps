@@ -1,4 +1,3 @@
-StructureExtension.prototype.IsFull = function()
-{
-    return this.energy === this.energyCapacity;
-};
+StructureExtension.prototype.IsFull = function () {
+  return this.energy === this.energyCapacity
+}
