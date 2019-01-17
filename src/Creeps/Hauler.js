@@ -11,7 +11,10 @@ let HaulerActions =
     MoveToPath: (creep) => {
       if (creep.fatigue <= 0) {
         if (creep.memory.walkIndex >= creep.memory.path.length) {
-          creep.memory.state = STATE_IDLE
+          creep.memory.state = STATE_HAUL
+          creep.memory.pickingUp = true
+          creep.memory.walkIndex = 1
+          creep.memory.path = Memory.intel[creep.room.name].sourcePaths[creep.memory.sourceIndex]
         } else {
           creep.MoveByPath()
         }
@@ -58,9 +61,7 @@ let Actions = [
 let Hauler =
   {
     Setup: (creep) => {
-      creep.memory.state = STATE_MOVE_TO_PATH
-      creep.memory.walkIndex = 0
-      creep.memory.path = Memory.intel[creep.room.name].spawnerToExtensionsPath
+      creep.memory.state = STATE_IDLE
     },
 
     Advance: (creep) => {
@@ -68,10 +69,10 @@ let Hauler =
     },
 
     SetDepositJob: (creep, sourceIndex) => {
-      creep.memory.state = STATE_HAUL
-      creep.memory.pickingUp = true
-      creep.memory.walkIndex = 1
-      creep.memory.path = Memory.intel[creep.room.name].sourcePaths[sourceIndex]
+      creep.memory.state = STATE_MOVE_TO_PATH
+      creep.memory.sourceIndex = sourceIndex
+      creep.memory.walkIndex = 0
+      creep.memory.path = Memory.intel[creep.room.name].spawnerToExtensionsPath
     }
   }
 

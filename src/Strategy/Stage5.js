@@ -11,7 +11,7 @@ let Stage5 =
       let room = Game.rooms[roomName]
       let spawner = room.lookForAt(LOOK_STRUCTURES, roomIntel.spawnerPos.x, roomIntel.spawnerPos.y)[0]
 
-    // Clear dead or idle creeps from jobs and collect lists of jobs.
+      // Clear dead or idle creeps from jobs and collect lists of jobs.
       if (roomIntel.refiller !== null) {
         if (!Game.creeps[roomIntel.refiller]) {
           roomIntel.refiller = null
@@ -62,7 +62,7 @@ let Stage5 =
               continue
             }
           }
-        // No harvester OR harvester is dead OR harvester has finished harvesting.
+          // No harvester OR harvester is dead OR harvester has finished harvesting.
           initialHarvestJobs.push({ sourcePosIter: sourcePosIter, harvestPosIter: harvestPosIter })
         }
       }
@@ -110,7 +110,7 @@ let Stage5 =
       // First try and spawn a refiller
       if (roomIntel.refiller === null) {
         spawner.TrySpawn([CARRY, CARRY, CARRY, CARRY, CARRY, MOVE], CREEP_REFILLER)
-      } else if (haulJobs.length === harvestJobs.length && haulJobs.length !== 0) {
+      } else if (haulJobs.length === harvestJobs.length && haulJobs.length > 0) {
         // Spawn hauler before harvester
         spawner.TrySpawn(StrategyUtil.GetHaulerBody(roomIntel.sourcePaths[haulJobs[0]].length, 550), CREEP_HAULER)
       } else if (harvestJobs.length !== 0) {

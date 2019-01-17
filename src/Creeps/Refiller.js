@@ -79,7 +79,7 @@ let Refiller =
       }
       let shouldTransition = false
       let roomIntel = Memory.intel[creep.room.name]
-    // If the spawner is full we want to fill extensions regardless
+      // If the spawner is full we want to fill extensions regardless
       if (creep.room.lookForAt(LOOK_STRUCTURES, roomIntel.spawnerPos.x, roomIntel.spawnerPos.y)[0].IsFull()) {
         shouldTransition = true
       } else {
@@ -97,6 +97,7 @@ let Refiller =
       if (shouldTransition) {
         creep.memory.path = ExtensionManager.GetWalkPath(extensionsPos)
         creep.memory.walkIndex = 0
+        delete creep.memory.lastPos
         creep.memory.fillIndex = 0
         creep.memory.totalFillIndex = 0
         creep.withdraw(
@@ -107,13 +108,14 @@ let Refiller =
     },
 
     FromMoveToFillSpawner: (creep) => {
-    // FromTakeToFillExtensions has already been checked since it appears first so we can assume filling the
-    // spawner is ok without checking extensions or if the spawner is full.
+      // FromTakeToFillExtensions has already been checked since it appears first so we can assume filling the
+      // spawner is ok without checking extensions or if the spawner is full.
       let extensionsPos = creep.memory.extensionsPos
       let shouldTransition = (creep.pos.x === extensionsPos.x && creep.pos.y === extensionsPos.y)
       if (shouldTransition) {
         creep.memory.path = Memory.intel[creep.room.name].spawnerToExtensionsPath
-        creep.memory.walkIndex = creep.memory.path.length - 2
+        creep.memory.walkIndex = creep.memory.path.length - 1
+        delete creep.memory.lastPos
         creep.memory.forwards = false
         creep.withdraw(
         creep.room.lookForAt(LOOK_STRUCTURES, extensionsPos.x, extensionsPos.y)[0],
@@ -123,12 +125,13 @@ let Refiller =
     },
 
     FromFillExtensionsToMove: (creep) => {
-    // Early return to avoid finding extension
+      // Early return to avoid finding extension
       if (creep.IsEmpty()) {
         return true
       }
-      let fillPos = ExtensionManager.GetTransformedPosition(creep.memory.totalFillIndex, creep.memory.extensionsPos)
-      let shouldTransition = !creep.room.lookForAt(LOOK_STRUCTURES, fillPos[0], fillPos[1])[0]
+      let fillPos =
+        ExtensionManager.GetTransformedPosition(creep.memory.totalFillIndex, creep.memory.extensionsPos)
+      let shouldTransition = fillPos && !creep.room.lookForAt(LOOK_STRUCTURES, fillPos[0], fillPos[1])[0]
       if (shouldTransition) {
         creep.memory.forwards = creep.memory.walkIndex * 2 >= creep.memory.path.length
       }
@@ -138,6 +141,8 @@ let Refiller =
     FromFillSpawnerToMove: (creep) => {
       let shouldTransition = creep.memory.walkIndex <= 0
       if (shouldTransition) {
+        creep.memory.walkIndex = 0
+        delete creep.memory.lastPos
         creep.memory.forwards = true
         let roomIntel = Memory.intel[creep.room.name]
         let spawner = creep.room.lookForAt(LOOK_STRUCTURES, roomIntel.spawnerPos.x, roomIntel.spawnerPos.y)[0]

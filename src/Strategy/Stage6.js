@@ -71,6 +71,12 @@ Stage6 =
     let maybeCreep = StrategyUtil.GetNextIdleCreep()
     while (maybeCreep) {
       switch (maybeCreep.memory.type) {
+        case CREEP_INITIAL:
+          let extensionPos = roomIntel.extensionsPos
+          let diePos = extensionPos.x + ROOM_SIZE * extensionPos.y
+          maybeCreep.SetDieJob(diePos)
+          break
+
         case CREEP_MINER:
           jobIndex = harvestJobs.pop()
           roomIntel.harvesters[jobIndex] = maybeCreep.name

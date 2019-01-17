@@ -12,7 +12,9 @@ let MinerActions =
     MoveToPath: (creep) => {
       if (creep.fatigue <= 0) {
         if (creep.memory.walkIndex >= creep.memory.path.length) {
-          creep.memory.state = STATE_IDLE
+          creep.memory.state = STATE_MOVE_TO_SOURCE
+          creep.memory.walkIndex = 1
+          creep.memory.path = Memory.intel[creep.room.name].sourcePaths[creep.memory.sourceIndex]
         } else {
           creep.MoveByPath()
         }
@@ -23,6 +25,9 @@ let MinerActions =
       if (creep.fatigue <= 0) {
         if (creep.memory.walkIndex >= creep.memory.path.length) {
           creep.memory.state = STATE_MINE
+          delete creep.memory.walkIndex
+          delete creep.memory.path
+          delete creep.memory.sourceIndex
         } else {
           creep.MoveByPath()
         }
@@ -50,9 +55,7 @@ let Actions = [
 let Miner =
   {
     Setup: (creep) => {
-      creep.memory.state = STATE_MOVE_TO_PATH
-      creep.memory.walkIndex = 0
-      creep.memory.path = Memory.intel[creep.room.name].spawnerToExtensionsPath
+      creep.memory.state = STATE_IDLE
     },
 
     Advance: (creep) => {
@@ -60,10 +63,11 @@ let Miner =
     },
 
     SetHarvestJob: (creep, harvestPos, sourceIndex) => {
-      creep.memory.state = STATE_MOVE_TO_SOURCE
-      creep.memory.walkIndex = 1
-      creep.memory.path = Memory.intel[creep.room.name].sourcePaths[sourceIndex]
+      creep.memory.state = STATE_MOVE_TO_PATH
+      creep.memory.sourceIndex = sourceIndex
       creep.memory.harvestPos = harvestPos
+      creep.memory.walkIndex = 0
+      creep.memory.path = Memory.intel[creep.room.name].spawnerToExtensionsPath
     }
   }
 
