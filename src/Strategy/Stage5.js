@@ -5,36 +5,52 @@ const StrategyUtil = require('Strategy.StrategyUtil')
  */
 let Stage5 =
   {
+    Initialize: () => {
+      let roomIntel = Memory.intel[Memory.strategy.roomName]
+      let miners = []
+      let haulers = []
+      for (let i = 0; i < roomIntel.sourcePositions.length; ++i) {
+        miners.push(null)
+        haulers.push(null)
+      }
+      roomIntel.strategy = {
+        refiller: null,
+        miners: miners,
+        haulers: haulers
+      }
+    },
+
     Advance: () => {
       let roomName = Memory.strategy.roomName
       let roomIntel = Memory.intel[roomName]
+      let strategy = roomIntel.strategy
       let room = Game.rooms[roomName]
       let spawner = room.lookForAt(LOOK_STRUCTURES, roomIntel.spawnerPos.x, roomIntel.spawnerPos.y)[0]
 
       // Clear dead or idle creeps from jobs and collect lists of jobs.
-      if (roomIntel.refiller !== null) {
-        if (!Game.creeps[roomIntel.refiller]) {
-          roomIntel.refiller = null
+      if (strategy.refiller !== null) {
+        if (!Game.creeps[strategy.refiller]) {
+          strategy.refiller = null
         }
       }
 
       let harvestJobs = []
       let haulJobs = []
-      for (let i in roomIntel.haulers) {
-        let harvesterName = roomIntel.harvesters[i]
-        if (harvesterName !== null) {
-          if (!Game.creeps[harvesterName]) {
-            roomIntel.harvesters[i] = null
+      for (let i in strategy.haulers) {
+        let minerName = strategy.miners[i]
+        if (minerName !== null) {
+          if (!Game.creeps[minerName]) {
+            strategy.miners[i] = null
             harvestJobs.push(i)
           }
         } else {
           harvestJobs.push(i)
         }
 
-        let haulerName = roomIntel.haulers[i]
+        let haulerName = strategy.haulers[i]
         if (haulerName !== null) {
           if (!Game.creeps[haulerName]) {
-            roomIntel.haulers[i] = null
+            strategy.haulers[i] = null
             haulJobs.push(i)
           }
         } else {
@@ -45,7 +61,7 @@ let Stage5 =
       let maxHarvestJobs = 0
       let initialHarvestJobs = []
       for (let sourcePosIter in roomIntel.sourcePositions) {
-        if (roomIntel.harvesters[sourcePosIter] !== null) {
+        if (strategy.miners[sourcePosIter] !== null) {
           continue
         }
         let harvestPositions = roomIntel.harvestPositions[sourcePosIter]
@@ -55,8 +71,8 @@ let Stage5 =
           if (harvesterName) {
             let harvester = Game.creeps[harvesterName]
             if (!harvester ||
-                        !harvester.memory.sourcePos ||
-                        harvester.memory.sourcePos !== roomIntel.sourcePositions[sourcePosIter]) {
+              !harvester.memory.sourcePos ||
+              harvester.memory.sourcePos !== roomIntel.sourcePositions[sourcePosIter]) {
               roomIntel.initialHarvesters[sourcePosIter][harvestPosIter] = null
             } else {
               continue
@@ -93,13 +109,13 @@ let Stage5 =
 
           case CREEP_MINER:
             jobIndex = harvestJobs.pop()
-            roomIntel.harvesters[jobIndex] = maybeCreep.name
+            strategy.miners[jobIndex] = maybeCreep.name
             maybeCreep.SetHarvestJob(roomIntel.sourcePositions[jobIndex], jobIndex)
             break
 
           case CREEP_HAULER:
             jobIndex = haulJobs.pop()
-            roomIntel.haulers[jobIndex] = maybeCreep.name
+            strategy.haulers[jobIndex] = maybeCreep.name
             maybeCreep.SetDepositJob(jobIndex)
             break
         }
@@ -108,9 +124,9 @@ let Stage5 =
 
       // Before spawning initial creeps we want to try and spawn higher tier creeps
       // First try and spawn a refiller
-      if (roomIntel.refiller === null) {
+      if (strategy.refiller === null) {
         spawner.TrySpawn([CARRY, CARRY, CARRY, CARRY, CARRY, MOVE], CREEP_REFILLER)
-      } else if (haulJobs.length === harvestJobs.length && haulJobs.length > 0) {
+      } else if (haulJobs.length >= harvestJobs.length && haulJobs.length > 0) {
         // Spawn hauler before harvester
         spawner.TrySpawn(StrategyUtil.GetHaulerBody(roomIntel.sourcePaths[haulJobs[0]].length, 550), CREEP_HAULER)
       } else if (harvestJobs.length !== 0) {
@@ -134,7 +150,11 @@ let Stage5 =
 
     FromStage4ToStage5: () => {
       let roomIntel = Memory.intel[Memory.strategy.roomName]
-      return roomIntel.finishedContainers.length >= roomIntel.harvestPositions.length
+      let shouldTransition = roomIntel.finishedContainers.length >= roomIntel.harvestPositions.length
+      if (shouldTransition) {
+        Stage5.Initialize()
+      }
+      return shouldTransition
     }
   }
 

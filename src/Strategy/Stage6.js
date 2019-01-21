@@ -11,19 +11,21 @@ Stage6 =
   Initialize: () => {
     let room = Game.rooms[Memory.strategy.roomName]
     let roomIntel = Memory.intel[Memory.strategy.roomName]
+    let strategy = roomIntel.strategy
     PathManager.PlaceRoads(room, roomIntel.spawnerToExtensionsPath)
     for (let pathIter in roomIntel.sourcePaths) {
       PathManager.PlaceRoads(room, roomIntel.sourcePaths[pathIter])
     }
     roomIntel.strategy = {
-      refiller: roomIntel.refiller,
-      harvesters: roomIntel.harvesters,
-      haulers: roomIntel.haulers,
+      refiller: strategy.refiller,
+      miners: strategy.miners,
+      haulers: strategy.haulers,
       builders: [],
       buildPathJobs: [],
-      repairPathJobs: []
+      repairPathJobs: [],
+      doneBuilding: false
     }
-    StrategyUtil.SetNumBuilders(roomIntel.strategy, roomIntel.sourcePositions.length)
+    StrategyUtil.SetNumBuilders(strategy, roomIntel.sourcePositions.length)
     Stage6.CalculateBuilderJobs(room, roomIntel)
   },
 
@@ -40,17 +42,17 @@ Stage6 =
       }
     }
 
-    let harvestJobs = []
+    let miningJobs = []
     let haulJobs = []
     for (let i in strategy.haulers) {
-      let harvesterName = strategy.harvesters[i]
-      if (harvesterName !== null) {
-        if (!Game.creeps[harvesterName]) {
-          strategy.harvesters[i] = null
-          harvestJobs.push(i)
+      let minerName = strategy.miners[i]
+      if (minerName !== null) {
+        if (!Game.creeps[minerName]) {
+          strategy.miners[i] = null
+          miningJobs.push(i)
         }
       } else {
-        harvestJobs.push(i)
+        miningJobs.push(i)
       }
 
       let haulerName = strategy.haulers[i]
@@ -77,6 +79,11 @@ Stage6 =
       Stage6.CalculateBuilderJobs(room, roomIntel)
     }
 
+    if (!strategy.doneBuilding && strategy.buildPathJobs.length === 0) {
+      strategy.doneBuilding = true
+      StrategyUtil.SetNumBuilders(strategy, roomIntel.sourcePositions.length * 3)
+    }
+
     let jobIndex
     let maybeCreep = StrategyUtil.GetNextIdleCreep()
     while (maybeCreep) {
@@ -88,8 +95,8 @@ Stage6 =
           break
 
         case CREEP_MINER:
-          jobIndex = harvestJobs.pop()
-          strategy.harvesters[jobIndex] = maybeCreep.name
+          jobIndex = miningJobs.pop()
+          strategy.miners[jobIndex] = maybeCreep.name
           maybeCreep.SetHarvestJob(roomIntel.sourcePositions[jobIndex], jobIndex)
           break
 
@@ -145,12 +152,18 @@ Stage6 =
     }
     if (strategy.refiller === null) {
       spawner.TrySpawn([CARRY, CARRY, CARRY, CARRY, CARRY, MOVE], CREEP_REFILLER)
-    } else if (haulJobs.length === harvestJobs.length && haulJobs.length !== 0) {
+    } else if (haulJobs.length >= miningJobs.length && haulJobs.length !== 0) {
       spawner.TrySpawn(StrategyUtil.GetHaulerBody(roomIntel.sourcePaths[haulJobs[0]].length, 550), CREEP_HAULER)
-    } else if (harvestJobs.length !== 0) {
+    } else if (miningJobs.length !== 0) {
       spawner.TrySpawn([WORK, WORK, WORK, WORK, WORK, MOVE], CREEP_MINER)
     } else if (numBuilders < strategy.builders.length) {
-      spawner.TrySpawn([WORK, CARRY, CARRY, CARRY, MOVE, WORK, CARRY, MOVE], CREEP_BUILDER)
+      let body
+      if (strategy.doneBuilding) {
+        body = [WORK, WORK, CARRY, CARRY, MOVE, WORK, CARRY, MOVE]
+      } else {
+        body = [WORK, CARRY, CARRY, CARRY, MOVE, WORK, CARRY, MOVE]
+      }
+      spawner.TrySpawn(body, CREEP_BUILDER)
     }
   },
 
@@ -229,7 +242,7 @@ Stage6 =
     let roomIntel = Memory.intel[Memory.strategy.roomName]
     let shouldTransition = roomIntel.refiller !== null &&
             !roomIntel.haulers.includes(null) &&
-            !roomIntel.harvesters.includes(null)
+            !roomIntel.miners.includes(null)
     if (shouldTransition) {
       Stage6.Initialize()
     }

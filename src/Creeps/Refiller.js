@@ -50,7 +50,7 @@ let Refiller =
   {
     Setup: (creep) => {
       let roomIntel = Memory.intel[creep.room.name]
-      roomIntel.refiller = creep.name
+      roomIntel.strategy.refiller = creep.name
       creep.memory.state = STATE_MOVE
       creep.memory.extensionsPos = roomIntel.extensionsPos
 
@@ -125,13 +125,14 @@ let Refiller =
     },
 
     FromFillExtensionsToMove: (creep) => {
-      // Early return to avoid finding extension
+      let shouldTransition
       if (creep.IsEmpty()) {
-        return true
+        shouldTransition = true
+      } else {
+        let fillPos =
+          ExtensionManager.GetTransformedPosition(creep.memory.totalFillIndex, creep.memory.extensionsPos)
+        shouldTransition = fillPos && !creep.room.lookForAt(LOOK_STRUCTURES, fillPos[0], fillPos[1])[0]
       }
-      let fillPos =
-        ExtensionManager.GetTransformedPosition(creep.memory.totalFillIndex, creep.memory.extensionsPos)
-      let shouldTransition = fillPos && !creep.room.lookForAt(LOOK_STRUCTURES, fillPos[0], fillPos[1])[0]
       if (shouldTransition) {
         creep.memory.forwards = creep.memory.walkIndex * 2 >= creep.memory.path.length
       }

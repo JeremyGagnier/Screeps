@@ -31,15 +31,23 @@ let BuilderActions =
 
     Build: (creep) => {
       creep.Build()
+      if (creep.fatigue <= 0) {
+        creep.Move()
+      }
     },
 
     Repair: (creep) => {
       creep.Repair()
+      if (creep.fatigue <= 0) {
+        creep.Move()
+      }
     },
 
     Upgrade: (creep) => {
       creep.Deposit()
-      creep.Move()
+      if (creep.fatigue <= 0) {
+        creep.Move()
+      }
     },
 
     Die: (creep) => {
