@@ -81,12 +81,15 @@ module.exports = (Grunt) => {
           'LOOK_TERRAIN',
           'MOVE',
           'Memory',
+          'OFTEN',
           'OK',
           'PathFinder',
+          'RARELY',
           'RESOURCE_ENERGY',
           'RIGHT',
           'ROOM_SIZE',
           'RoomPosition',
+          'SOMETIMES',
           'STRUCTURE_CONTAINER',
           'STRUCTURE_EXTENSION',
           'STRUCTURE_ROAD',
@@ -97,23 +100,20 @@ module.exports = (Grunt) => {
           'TOP',
           'TOP_LEFT',
           'TOP_RIGHT',
+          'VERY_RARELY',
           'WORK',
           '_'
         ],
         fix: true
       },
-      app: {
-        src: [
-          'src/*.js',
-          'src/**/*.js',
-          'src/**/**/*.js'
-        ]
+      default: {
+        src: ['src/*.js', 'src/**/*.js']
       }
     },
     uglify: {
       mangle: {},
       compress: {},
-      my_target: {
+      default: {
         files: [{
           expand: true,
           cwd: 'dist/es5',

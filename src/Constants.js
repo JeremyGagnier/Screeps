@@ -14,3 +14,8 @@ global.DIRECTIONS = [
   [BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT]
 ]
 /* eslint-disable standard/array-bracket-even-spacing */
+
+global.OFTEN = 4
+global.SOMETIMES = 20
+global.RARELY = 120
+global.VERY_RARELY = 800

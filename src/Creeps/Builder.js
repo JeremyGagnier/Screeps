@@ -39,6 +39,7 @@ let BuilderActions =
 
     Upgrade: (creep) => {
       creep.Deposit()
+      creep.Move()
     },
 
     Die: (creep) => {
@@ -209,9 +210,10 @@ let Builder =
       creep.memory.jobPos = buildPos
     },
 
-    SetBuildPathJob: (creep, withdrawPos, path) => {
+    SetBuildPathJob: (creep, jobIndex, withdrawPos, path) => {
       creep.memory.state = STATE_MOVE
       creep.memory.jobType = JOB_BUILD_PATH
+      creep.memory.jobIndex = jobIndex
       creep.memory.withdrawPos = withdrawPos
       creep.memory.targetPos = withdrawPos
       for (let pathIter in path) {
@@ -224,9 +226,10 @@ let Builder =
       creep.memory.path = path
     },
 
-    SetRepairPathJob: (creep, withdrawPos, path) => {
+    SetRepairPathJob: (creep, jobIndex, withdrawPos, path) => {
       creep.memory.state = STATE_MOVE
       creep.memory.jobType = JOB_REPAIR_PATH
+      creep.memory.jobIndex = jobIndex
       creep.memory.withdrawPos = withdrawPos
       creep.memory.targetPos = withdrawPos
       for (let pathIter in path) {

@@ -91,16 +91,16 @@ let StrategyUtil =
       return body
     },
 
-    SetNumBuilders: (roomIntel, numBuilders) => {
-      if (numBuilders < roomIntel.builders.length) {
-        let extensionPos = roomIntel.extensionsPos
+    SetNumBuilders: (strategy, numBuilders) => {
+      if (numBuilders < strategy.builders.length) {
+        let extensionPos = strategy.extensionsPos
         let diePos = extensionPos.x + ROOM_SIZE * extensionPos.y
-        while (numBuilders > roomIntel.builders.length) {
-          Game.creeps[roomIntel.builders.pop()].SetDieJob(diePos)
+        while (numBuilders > strategy.builders.length) {
+          Game.creeps[strategy.builders.pop()].SetDieJob(diePos)
         }
       } else {
-        while (numBuilders > roomIntel.builders.length) {
-          roomIntel.builders.push(null)
+        while (numBuilders > strategy.builders.length) {
+          strategy.builders.push(null)
         }
       }
     }

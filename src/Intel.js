@@ -100,7 +100,6 @@ Intel =
       harvesters: harvesters,
       haulers: haulers,
       refiller: null,
-      builders: [],
       builtExtensionsIndex: 0,
 
       spawnerPos: spawnerPos,

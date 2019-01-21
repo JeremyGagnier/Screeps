@@ -15,7 +15,7 @@ module.exports.loop = () => {
     Strategy.Initialize()
   }
 
-  if ((Game.time % 1500) === 0) {
+  if ((Game.time % VERY_RARELY) === 0) {
     CleanCreeps()
   }
 

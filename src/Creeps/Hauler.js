@@ -13,7 +13,8 @@ let HaulerActions =
         if (creep.memory.walkIndex >= creep.memory.path.length) {
           creep.memory.state = STATE_HAUL
           creep.memory.pickingUp = true
-          creep.memory.walkIndex = 1
+          creep.memory.walkIndex = 0
+          delete creep.memory.lastPos
           creep.memory.path = Memory.intel[creep.room.name].sourcePaths[creep.memory.sourceIndex]
         } else {
           creep.MoveByPath()

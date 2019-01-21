@@ -3,5 +3,5 @@ Structure.prototype.IsHealthy = function () {
 }
 
 Structure.prototype.NeedsRepair = function () {
-  return (this.hits / this.hitsMax) >= 0.5
+  return (this.hits / this.hitsMax) <= 0.5
 }
