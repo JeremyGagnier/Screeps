@@ -2,11 +2,13 @@ const Intel = require('Intel')
 const Strategy = require('Strategy.Strategy')
 
 global.ResetMemory = () => {
+  let creepCount = Memory.strategy.creepCount
   delete Memory.intel
   delete Memory.strategy
   delete Memory.rooms
   Intel.Initialize()
   Strategy.Initialize()
+  Memory.strategy.creepCount = creepCount
   for (let creepName in Memory.creeps) {
     if (!Game.creeps[creepName]) {
       delete Memory.creeps[creepName]

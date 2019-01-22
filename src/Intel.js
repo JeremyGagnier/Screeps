@@ -14,8 +14,6 @@ Intel =
     let sourcePositions = []
     let harvestPositions = []
     let initialHarvesters = []
-    let harvesters = []
-    let haulers = []
 
     let sources = room.find(FIND_SOURCES)
     for (let sourceIter in sources) {
@@ -33,8 +31,6 @@ Intel =
       sourcePositions.push(sourcePos.x + ROOM_SIZE * sourcePos.y)
       harvestPositions.push(positions)
       initialHarvesters.push(nulls)
-      harvesters.push(null)
-      haulers.push(null)
     }
 
     let flags = room.find(FIND_FLAGS)
@@ -70,13 +66,25 @@ Intel =
       }
     }
 
-    let spawnerToExtensionsPath = PathManager.GetSpawnerToExtensionPath(room.name, extensionsPos, spawnerPos)
-    let sourcePaths = PathManager.GetSourcePaths(
-      room.name,
-      extensionsPos,
-      spawnerPos,
-      sourcePositions,
-      spawnerToExtensionsPath)
+    let roomIntel = {
+      sourcePositions: sourcePositions,
+      harvestPositions: harvestPositions,
+      spawnerPos: spawnerPos,
+      extensionsPos: extensionsPos
+    }
+
+    let spawnerToExtensionsPath = PathManager.GetSpawnerToExtensionPath(room.name, roomIntel)
+    let sourcePaths = PathManager.GetSourcePaths(room.name, roomIntel, spawnerToExtensionsPath)
+
+    let allPaths = sourcePaths.concat([spawnerToExtensionsPath])
+    let banned = sourcePaths.map(path => path[path.length - 1])
+    let extensionsToControllerPath = PathManager.GetPath(
+      roomIntel,
+      new RoomPosition(extensionsPos.x, extensionsPos.y, room.name),
+      room.controller.pos,
+      1,
+      allPaths,
+      banned)
 
     for (let i in harvestPositions) {
       if (sourcePaths[i] === null) {
@@ -92,23 +100,16 @@ Intel =
       harvestPositions[i].unshift(compactPos)
     }
 
-    Memory.intel[room.name] =
-    {
-      sourcePositions: sourcePositions,
-      harvestPositions: harvestPositions,
+    Memory.intel[room.name] = Object.assign(roomIntel, {
+      // TODO: Move these three into roomIntel.strategy
       initialHarvesters: initialHarvesters,
-      harvesters: harvesters,
-      haulers: haulers,
-      refiller: null,
       builtExtensionsIndex: 0,
-
-      spawnerPos: spawnerPos,
-      extensionsPos: extensionsPos,
       finishedContainers: null,
 
       spawnerToExtensionsPath: spawnerToExtensionsPath,
-      sourcePaths: sourcePaths
-    }
+      sourcePaths: sourcePaths,
+      extensionsToControllerPath: extensionsToControllerPath
+    })
   },
 
   FindSuitableExtensionsPosition: (room, spawnerPos) => {

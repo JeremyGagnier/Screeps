@@ -231,6 +231,9 @@ let Builder =
           break
         }
       }
+      if (!creep.memory.jobPos) {
+        creep.memory.state = STATE_IDLE
+      }
       creep.memory.path = path
     },
 

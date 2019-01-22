@@ -116,9 +116,9 @@ let Stage4 =
 
       let creepsCount = Object.keys(Game.creeps).length
       StrategyUtil.MaybeSpawnInitialCreep(
-      shouldSpawnCreep,
-      creepsCount,
-      spawner)
+        shouldSpawnCreep,
+        creepsCount,
+        spawner)
     },
 
     FromStage3ToStage4: () => {

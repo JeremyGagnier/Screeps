@@ -30,7 +30,7 @@ let StrategyUtil =
               continue
             }
           }
-        // No harvester OR harvester is dead OR harvester has finished harvesting.
+          // No harvester OR harvester is dead OR harvester has finished harvesting.
           harvestJobs.push({ sourcePosIter: sourcePosIter, harvestPosIter: harvestPosIter })
         }
       }
@@ -65,9 +65,9 @@ let StrategyUtil =
           body = [CARRY, WORK, MOVE]
         }
         spawner.spawnCreep(
-        body,
-        Memory.strategy.creepCount.toString(),
-        { memory: { new: true, type: CREEP_INITIAL } })
+          body,
+          Memory.strategy.creepCount.toString(),
+          { memory: { new: true, type: CREEP_INITIAL } })
       }
     },
 

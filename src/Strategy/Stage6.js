@@ -11,15 +11,15 @@ Stage6 =
   Initialize: () => {
     let room = Game.rooms[Memory.strategy.roomName]
     let roomIntel = Memory.intel[Memory.strategy.roomName]
-    let strategy = roomIntel.strategy
-    PathManager.PlaceRoads(room, roomIntel.spawnerToExtensionsPath)
+    PathManager.PlaceRoads(room, roomIntel.spawnerToExtensionsPath, false, true)
+    PathManager.PlaceRoads(room, roomIntel.extensionsToControllerPath, true, false)
     for (let pathIter in roomIntel.sourcePaths) {
       PathManager.PlaceRoads(room, roomIntel.sourcePaths[pathIter])
     }
-    roomIntel.strategy = {
-      refiller: strategy.refiller,
-      miners: strategy.miners,
-      haulers: strategy.haulers,
+    let strategy = {
+      refiller: roomIntel.strategy.refiller,
+      miners: roomIntel.strategy.miners,
+      haulers: roomIntel.strategy.haulers,
       builders: [],
       buildPathJobs: [],
       repairPathJobs: [],
@@ -27,6 +27,7 @@ Stage6 =
     }
     StrategyUtil.SetNumBuilders(strategy, roomIntel.sourcePositions.length)
     Stage6.CalculateBuilderJobs(room, roomIntel)
+    roomIntel.strategy = strategy
   },
 
   Advance: () => {
@@ -79,11 +80,6 @@ Stage6 =
       Stage6.CalculateBuilderJobs(room, roomIntel)
     }
 
-    if (!strategy.doneBuilding && strategy.buildPathJobs.length === 0) {
-      strategy.doneBuilding = true
-      StrategyUtil.SetNumBuilders(strategy, roomIntel.sourcePositions.length * 3)
-    }
-
     let jobIndex
     let maybeCreep = StrategyUtil.GetNextIdleCreep()
     while (maybeCreep) {
@@ -124,18 +120,34 @@ Stage6 =
           // Find a job for the builder. If no job is available upgrade the room controller.
           if (strategy.buildPathJobs.length > 0) {
             let jobIndex = strategy.buildPathJobs.pop()
+            let path
+            if (jobIndex < roomIntel.sourcePaths.length) {
+              path = roomIntel.sourcePaths[jobIndex]
+            } else {
+              path = [
+                roomIntel.spawnerToExtensionsPath,
+                roomIntel.extensionsToControllerPath][jobIndex - roomIntel.sourcePaths.length]
+            }
             Builder.SetBuildPathJob(
               maybeCreep,
               jobIndex,
               roomIntel.extensionsPos.x + roomIntel.extensionsPos.y * ROOM_SIZE,
-              roomIntel.sourcePaths[jobIndex])
+              path)
           } else if (strategy.repairPathJobs.length > 0) {
             let jobIndex = strategy.repairPathJobs.pop()
+            let path
+            if (jobIndex < roomIntel.sourcePaths.length) {
+              path = roomIntel.sourcePaths[jobIndex]
+            } else {
+              path = [
+                roomIntel.spawnerToExtensionsPath,
+                roomIntel.extensionsToControllerPath][jobIndex - roomIntel.sourcePaths.length]
+            }
             Builder.SetRepairPathJob(
               maybeCreep,
               jobIndex,
               roomIntel.extensionsPos.x + roomIntel.extensionsPos.y * ROOM_SIZE,
-              roomIntel.sourcePaths[jobIndex])
+              path)
           } else {
             Builder.SetUpgradeJob(maybeCreep, roomIntel.extensionsPos.x + roomIntel.extensionsPos.y * ROOM_SIZE)
           }
@@ -171,8 +183,9 @@ Stage6 =
     let strategy = roomIntel.strategy
     let buildPathJobs = []
     let repairPathJobs = []
-    for (let pathsIter in roomIntel.sourcePaths) {
-      let path = roomIntel.sourcePaths[pathsIter]
+    let paths = roomIntel.sourcePaths.concat([roomIntel.spawnerToExtensionsPath, roomIntel.extensionsToControllerPath])
+    for (let pathsIter in paths) {
+      let path = paths[pathsIter]
       let structures = path.map(pos => room.lookForAt(LOOK_STRUCTURES, pos[0], pos[1])[0])
       for (let structureIter in structures) {
         let structure = structures[structureIter]
@@ -181,7 +194,7 @@ Stage6 =
             buildPathJobs.push(pathsIter)
           }
           let pos = path[structureIter]
-          if (structureIter === 0 || structureIter === path.length - 1) {
+          if (pathsIter < roomIntel.sourcePaths.length && (structureIter === 0 || structureIter === path.length - 1)) {
             room.createConstructionSite(pos[0], pos[1], STRUCTURE_CONTAINER)
           } else {
             room.createConstructionSite(pos[0], pos[1], STRUCTURE_ROAD)
@@ -192,6 +205,11 @@ Stage6 =
           }
         }
       }
+    }
+
+    if (!strategy.doneBuilding && strategy.buildPathJobs.length === 0) {
+      strategy.doneBuilding = true
+      StrategyUtil.SetNumBuilders(strategy, roomIntel.sourcePositions.length * 3)
     }
 
     let newBuildPathJobs = []
@@ -239,10 +257,10 @@ Stage6 =
   },
 
   FromStage5ToStage6: () => {
-    let roomIntel = Memory.intel[Memory.strategy.roomName]
-    let shouldTransition = roomIntel.refiller !== null &&
-            !roomIntel.haulers.includes(null) &&
-            !roomIntel.miners.includes(null)
+    let strategy = Memory.intel[Memory.strategy.roomName].strategy
+    let shouldTransition = strategy.refiller !== null &&
+            !strategy.haulers.includes(null) &&
+            !strategy.miners.includes(null)
     if (shouldTransition) {
       Stage6.Initialize()
     }
