@@ -78,8 +78,13 @@ let Builder =
     },
 
     FromMoveToMove: (creep) => {
-      let shouldTransition = (creep.memory.targetPos === creep.memory.withdrawPos && creep.DistanceToTarget() <= 1) ||
-        (creep.memory.targetPos === creep.memory.jobPos && creep.IsEmpty())
+      let shouldTransition
+      if (creep.memory.withdrawPos === creep.memory.jobPos) {
+        shouldTransition = creep.IsEmpty() && creep.DistanceToTarget() <= 1
+      } else {
+        shouldTransition = (creep.memory.targetPos === creep.memory.withdrawPos && creep.DistanceToTarget() <= 1) ||
+          (creep.memory.targetPos === creep.memory.jobPos && creep.IsEmpty())
+      }
       if (shouldTransition) {
         if (creep.memory.targetPos === creep.memory.withdrawPos) {
           creep.Withdraw()

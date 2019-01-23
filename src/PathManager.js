@@ -20,8 +20,8 @@ PathManager =
       })
     if (pathData.incomplete) {
       console.log('Failed to find a path from the spawner to the extensions in ' +
-                pathData.ops.toString() +
-                ' ops.')
+        pathData.ops.toString() +
+        ' ops.')
       return null
     }
     let path = pathData.path.map(roomPos => [roomPos.x, roomPos.y])

@@ -59,7 +59,19 @@ Creep.prototype.MoveByPath = function (forward = true) {
     if (direction) {
       this.move(direction)
     } else {
-      console.log('Creep ' + this.name + ' was not adjacent to its next path position')
+      if (to[0] === this.pos.x && to[1] === this.pos.y) {
+        if (forward) {
+          this.memory.walkIndex += 1
+        } else {
+          this.memory.walkIndex -= 1
+        }
+      } else {
+        if (forward) {
+          this.memory.walkIndex -= 1
+        } else {
+          this.memory.walkIndex += 1
+        }
+      }
     }
   }
 }

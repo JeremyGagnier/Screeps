@@ -26,7 +26,7 @@ Stage6 =
       doneBuilding: false
     }
     StrategyUtil.SetNumBuilders(strategy, roomIntel.sourcePositions.length)
-    Stage6.CalculateBuilderJobs(room, roomIntel)
+    Stage6.CalculateBuilderJobs(room, strategy, roomIntel)
     roomIntel.strategy = strategy
   },
 
@@ -77,7 +77,7 @@ Stage6 =
 
     // This calculation is fairly expensive so don't do it very often
     if ((Game.time % RARELY) === 0) {
-      Stage6.CalculateBuilderJobs(room, roomIntel)
+      Stage6.CalculateBuilderJobs(room, strategy, roomIntel)
     }
 
     let jobIndex
@@ -179,8 +179,7 @@ Stage6 =
     }
   },
 
-  CalculateBuilderJobs: (room, roomIntel) => {
-    let strategy = roomIntel.strategy
+  CalculateBuilderJobs: (room, strategy, roomIntel) => {
     let buildPathJobs = []
     let repairPathJobs = []
     let paths = roomIntel.sourcePaths.concat([roomIntel.spawnerToExtensionsPath, roomIntel.extensionsToControllerPath])
@@ -194,9 +193,7 @@ Stage6 =
             buildPathJobs.push(pathsIter)
           }
           let pos = path[structureIter]
-          if (pathsIter < roomIntel.sourcePaths.length && (structureIter === 0 || structureIter === path.length - 1)) {
-            room.createConstructionSite(pos[0], pos[1], STRUCTURE_CONTAINER)
-          } else {
+          if (structureIter !== 0 && structureIter !== path.length - 1)) {
             room.createConstructionSite(pos[0], pos[1], STRUCTURE_ROAD)
           }
         } else if (structure.NeedsRepair()) {
@@ -259,8 +256,8 @@ Stage6 =
   FromStage5ToStage6: () => {
     let strategy = Memory.intel[Memory.strategy.roomName].strategy
     let shouldTransition = strategy.refiller !== null &&
-            !strategy.haulers.includes(null) &&
-            !strategy.miners.includes(null)
+      !strategy.haulers.includes(null) &&
+      !strategy.miners.includes(null)
     if (shouldTransition) {
       Stage6.Initialize()
     }
