@@ -169,7 +169,8 @@ let Builder =
         shouldTransition = true
         for (let pathIter in creep.memory.path) {
           let pos = creep.memory.path[pathIter]
-          if (creep.room.lookForAt(LOOK_STRUCTURES, pos[0], pos[1])[0].NeedsRepair()) {
+          let maybeStructure = creep.room.lookForAt(LOOK_STRUCTURES, pos[0], pos[1])[0]
+          if (maybeStructure && maybeStructure.NeedsRepair()) {
             shouldTransition = false
             break
           }
@@ -190,7 +191,8 @@ let Builder =
         } else if (isFinished) {
           for (let pathIter in creep.memory.path) {
             let pos = creep.memory.path[pathIter]
-            if (creep.room.lookForAt(LOOK_STRUCTURES, pos[0], pos[1])[0].NeedsRepair()) {
+            let maybeStructure = creep.room.lookForAt(LOOK_STRUCTURES, pos[0], pos[1])[0]
+            if (maybeStructure && maybeStructure.NeedsRepair()) {
               shouldTransition = true
               creep.memory.jobPos = pos[0] + pos[1] * ROOM_SIZE
               break
@@ -251,7 +253,8 @@ let Builder =
       creep.memory.targetPos = withdrawPos
       for (let pathIter in path) {
         let pos = path[pathIter]
-        if (creep.room.lookForAt(LOOK_STRUCTURES, pos[0], pos[1])[0].NeedsRepair()) {
+        let maybeStructure = creep.room.lookForAt(LOOK_STRUCTURES, pos[0], pos[1])[0]
+        if (maybeStructure && maybeStructure.NeedsRepair()) {
           creep.memory.jobPos = pos[0] + pos[1] * ROOM_SIZE
           break
         }
