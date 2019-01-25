@@ -192,8 +192,8 @@ Stage6 =
           if (buildPathJobs[buildPathJobs.length - 1] !== pathsIter) {
             buildPathJobs.push(pathsIter)
           }
-          let pos = path[structureIter]
-          if (structureIter !== 0 && structureIter !== path.length - 1) {
+          if (structureIter !== '0' && structureIter !== '' + (path.length - 1)) {
+            let pos = path[structureIter]
             room.createConstructionSite(pos[0], pos[1], STRUCTURE_ROAD)
           }
         } else if (structure.NeedsRepair()) {
