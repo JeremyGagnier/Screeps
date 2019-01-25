@@ -180,13 +180,14 @@ let Builder =
 
     FromRepairToMove: (creep) => {
       let shouldTransition = false
-      if (creep.memory.jobType === JOB_REPAIR_PATH && creep.IsEmpty()) {
-        if (!creep.room.lookForAt(
+      let isFinished = creep.room.lookForAt(
         LOOK_STRUCTURES,
         creep.memory.targetPos % ROOM_SIZE,
-        ~~(creep.memory.targetPos / ROOM_SIZE))[0].IsHealthy()) {
+        ~~(creep.memory.targetPos / ROOM_SIZE))[0].IsHealthy()
+      if (creep.memory.jobType === JOB_REPAIR_PATH) {
+        if (!isFinished && creep.IsEmpty()) {
           shouldTransition = true
-        } else {
+        } else if (isFinished) {
           for (let pathIter in creep.memory.path) {
             let pos = creep.memory.path[pathIter]
             if (creep.room.lookForAt(LOOK_STRUCTURES, pos[0], pos[1])[0].NeedsRepair()) {

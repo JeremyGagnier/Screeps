@@ -143,9 +143,9 @@ let Stage5 =
 
       let creepsCount = Object.keys(Game.creeps).length
       StrategyUtil.MaybeSpawnInitialCreep(
-      shouldSpawnCreep && creepsCount < maxHarvestJobs,
-      creepsCount,
-      spawner)
+        shouldSpawnCreep && creepsCount < maxHarvestJobs,
+        creepsCount,
+        spawner)
     },
 
     FromStage4ToStage5: () => {

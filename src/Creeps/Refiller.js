@@ -54,8 +54,7 @@ let Refiller =
       creep.memory.state = STATE_MOVE
       creep.memory.extensionsPos = roomIntel.extensionsPos
 
-      creep.memory.path = roomIntel.spawnerToExtensionsPath
-      creep.memory.walkIndex = 0
+      creep.StartWalkByPath(roomIntel.spawnerToExtensionsPath)
       creep.memory.forwards = true
 
       creep.memory.fillIndex = 0
@@ -95,9 +94,7 @@ let Refiller =
         }
       }
       if (shouldTransition) {
-        creep.memory.path = ExtensionManager.GetWalkPath(extensionsPos)
-        creep.memory.walkIndex = 0
-        delete creep.memory.lastPos
+        creep.StartWalkByPath(ExtensionManager.GetWalkPath(extensionsPos))
         creep.memory.fillIndex = 0
         creep.memory.totalFillIndex = 0
         creep.withdraw(
@@ -113,13 +110,11 @@ let Refiller =
       let extensionsPos = creep.memory.extensionsPos
       let shouldTransition = (creep.pos.x === extensionsPos.x && creep.pos.y === extensionsPos.y)
       if (shouldTransition) {
-        creep.memory.path = Memory.intel[creep.room.name].spawnerToExtensionsPath
-        creep.memory.walkIndex = creep.memory.path.length - 1
-        delete creep.memory.lastPos
+        creep.StartWalkByPath(Memory.intel[creep.room.name].spawnerToExtensionsPath, false)
         creep.memory.forwards = false
         creep.withdraw(
-        creep.room.lookForAt(LOOK_STRUCTURES, extensionsPos.x, extensionsPos.y)[0],
-        RESOURCE_ENERGY)
+          creep.room.lookForAt(LOOK_STRUCTURES, extensionsPos.x, extensionsPos.y)[0],
+          RESOURCE_ENERGY)
       }
       return shouldTransition
     },
@@ -140,10 +135,9 @@ let Refiller =
     },
 
     FromFillSpawnerToMove: (creep) => {
-      let shouldTransition = creep.memory.walkIndex <= 0
+      let shouldTransition = creep.IsAtPathDestination(false)
       if (shouldTransition) {
-        creep.memory.walkIndex = 0
-        delete creep.memory.lastPos
+        creep.StartWalkByPath(creep.memory.path, true)
         creep.memory.forwards = true
         let roomIntel = Memory.intel[creep.room.name]
         let spawner = creep.room.lookForAt(LOOK_STRUCTURES, roomIntel.spawnerPos.x, roomIntel.spawnerPos.y)[0]

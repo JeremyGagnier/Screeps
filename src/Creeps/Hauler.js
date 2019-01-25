@@ -10,12 +10,10 @@ let HaulerActions =
 
     MoveToPath: (creep) => {
       if (creep.fatigue <= 0) {
-        if (creep.memory.walkIndex >= creep.memory.path.length) {
+        if (creep.IsAtPathDestination()) {
           creep.memory.state = STATE_HAUL
           creep.memory.pickingUp = true
-          creep.memory.walkIndex = 0
-          delete creep.memory.lastPos
-          creep.memory.path = Memory.intel[creep.room.name].sourcePaths[creep.memory.sourceIndex]
+          creep.StartWalkByPath(Memory.intel[creep.room.name].sourcePaths[creep.memory.sourceIndex])
         } else {
           creep.MoveByPath()
         }
@@ -26,25 +24,23 @@ let HaulerActions =
       if (creep.fatigue <= 0) {
         let path = creep.memory.path
         if (creep.memory.pickingUp) {
-          if (creep.memory.walkIndex >= path.length - 2) {
+          let pathPos = path[path.length - 2]
+          if (creep.pos.x === pathPos[0] && creep.pos.y === pathPos[1]) {
             creep.memory.pickingUp = false
             let containerPos = path[path.length - 1]
             let container = creep.room.lookForAt(LOOK_STRUCTURES, containerPos[0], containerPos[1])[0]
             if (container) {
               creep.withdraw(container, RESOURCE_ENERGY)
-            } else {
-              console.log("Hauler didn't end up next to a container for withdraw")
             }
           }
         } else {
-          if (creep.memory.walkIndex <= 1) {
+          let pathPos = path[1]
+          if (creep.pos.x === pathPos[0] && creep.pos.y === pathPos[1]) {
             creep.memory.pickingUp = true
             let containerPos = path[0]
             let container = creep.room.lookForAt(LOOK_STRUCTURES, containerPos[0], containerPos[1])[0]
             if (container) {
               creep.transfer(container, RESOURCE_ENERGY)
-            } else {
-              console.log("Hauler didn't end up next to a container for deposit")
             }
           }
         }
@@ -72,8 +68,7 @@ let Hauler =
     SetDepositJob: (creep, sourceIndex) => {
       creep.memory.state = STATE_MOVE_TO_PATH
       creep.memory.sourceIndex = sourceIndex
-      creep.memory.walkIndex = 0
-      creep.memory.path = Memory.intel[creep.room.name].spawnerToExtensionsPath
+      creep.StartWalkByPath(Memory.intel[creep.room.name].spawnerToExtensionsPath)
     }
   }
 

@@ -58,21 +58,27 @@ Creep.prototype.MoveByPath = function (forward = true) {
     let direction = DIRECTIONS[to[1] - this.pos.y + 1][to[0] - this.pos.x + 1]
     if (direction) {
       this.move(direction)
-    } else {
-      if (to[0] === this.pos.x && to[1] === this.pos.y) {
-        if (forward) {
-          this.memory.walkIndex += 1
-        } else {
-          this.memory.walkIndex -= 1
-        }
-      } else {
-        if (forward) {
-          this.memory.walkIndex -= 1
-        } else {
-          this.memory.walkIndex += 1
-        }
-      }
     }
+  }
+}
+
+Creep.prototype.IsAtPathDestination = function (forward = true) {
+  let pathPos
+  if (forward) {
+    pathPos = this.memory.path[this.memory.path.length - 1]
+  } else {
+    pathPos = this.memory.path[0]
+  }
+  return this.pos.x === pathPos[0] && this.pos.y === pathPos[1]
+}
+
+Creep.prototype.StartWalkByPath = function (path, forward = true) {
+  this.memory.lastPos = null
+  this.memory.path = path
+  if (forward) {
+    this.memory.walkIndex = 0
+  } else {
+    this.memory.walkIndex = path.length - 1
   }
 }
 
