@@ -23,7 +23,7 @@ let SpawnManager =
       switch (spawnerPos.orientation) {
         case 0:
           deltaX = 0
-          deltaY = 1
+          deltaY = -1
           break
         case 1:
           deltaX = 1
@@ -31,7 +31,7 @@ let SpawnManager =
           break
         case 2:
           deltaX = 0
-          deltaY = -1
+          deltaY = 1
           break
         case 3:
           deltaX = -1

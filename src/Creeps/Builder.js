@@ -87,7 +87,13 @@ let Builder =
       }
       if (shouldTransition) {
         if (creep.memory.targetPos === creep.memory.withdrawPos) {
-          creep.Withdraw()
+          let container = creep.room.lookForAt(
+            LOOK_STRUCTURES,
+            creep.memory.targetPos % ROOM_SIZE,
+            ~~(creep.memory.targetPos / ROOM_SIZE))[0]
+          if (container && container.store[RESOURCE_ENERGY] > 550 + creep.carryCapacity) {
+            creep.Withdraw()
+          }
           creep.memory.targetPos = creep.memory.jobPos
         } else {
           creep.memory.targetPos = creep.memory.withdrawPos
