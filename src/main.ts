@@ -1,9 +1,9 @@
-import { Empire } from "./Empire"
-import { ErrorMapper } from "./utils/ErrorMapper"
-import { StrategyManager } from './strategies/StrategyManager'
+require('types')
 import { CreepManager } from './creeps/CreepManager'
+import { Empire } from "Empire"
+import { StrategyManager } from './strategies/StrategyManager'
 
-export const loop: () => void = ErrorMapper.wrapLoop(() => {
+export const loop: () => void = () => {
     if (Memory.empire === undefined) {
         Memory.empire = new Empire()
     }
@@ -19,4 +19,4 @@ export const loop: () => void = ErrorMapper.wrapLoop(() => {
 
     CreepManager.Advance()
     StrategyManager.Advance()
-})
+}

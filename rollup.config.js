@@ -23,7 +23,7 @@ export default {
   },
 
   plugins: [
-    clear({ targets: ["dist"] }),
+    clear({ targets: ["dist/"] }),
     resolve(),
     commonjs(),
     typescript({tsconfig: "./tsconfig.json"}),

@@ -21,11 +21,11 @@ export abstract class CreepBase {
     }
 
     IsFull(creep: Creep) {
-        return _.sum(creep.carry) === creep.carryCapacity
+        return Sum(creep.carry) === creep.carryCapacity
     }
 
     IsEmpty(creep: Creep) {
-        return _.sum(creep.carry) === 0
+        return Sum(creep.carry) === 0
     }
 
     DistanceToTarget(creep: Creep, target: number) {

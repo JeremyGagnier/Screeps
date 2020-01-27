@@ -107,19 +107,19 @@ export class CreepInitial extends CreepBase {
                 }
             } else if (target instanceof StructureContainer) {
                 let container = target as StructureContainer
-                if (_.sum(container.store) >= container.storeCapacity) {
+                if (Sum(container.store) >= container.storeCapacity) {
                     this.data.state = InitialState.IDLE
                     return
                 }
             } else if (target instanceof StructureStorage) {
                 let storage = target as StructureStorage
-                if (_.sum(storage.store) >= storage.storeCapacity) {
+                if (Sum(storage.store) >= storage.storeCapacity) {
                     this.data.state = InitialState.IDLE
                     return
                 }
             } else if (target instanceof StructureTerminal) {
                 let terminal = target as StructureTerminal
-                if (_.sum(terminal.store) >= terminal.storeCapacity) {
+                if (Sum(terminal.store) >= terminal.storeCapacity) {
                     this.data.state = InitialState.IDLE
                     return
                 }
