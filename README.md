@@ -1,3 +1,5 @@
 # FSM Screeps AI
 
-TODO
+To install:
+`yarn install`
+`npm install --global rollup`
