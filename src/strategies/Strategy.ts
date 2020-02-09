@@ -1,10 +1,10 @@
 import { CreepBase } from 'creeps/CreepBase';
-import { ROOM_SIZE } from '../Constants';
-import { Intel } from 'Intel';
-import { CreepInitial, CreepInitialData } from '../creeps/CreepInitial';
-import { CreepType } from '../creeps/CreepType';
-import { ExtensionManager } from '../ExtensionManager';
+import { CreepManager } from 'creeps/CreepManager';
+import { CreepInitial } from '../creeps/CreepInitial';
 import { Empire } from 'Empire';
+import { ExtensionManager } from '../ExtensionManager';
+import { Intel } from 'Intel';
+import { ROOM_SIZE } from '../Constants';
 
 export enum StrategyType {
     INITIAL_RCL_2,
@@ -42,7 +42,7 @@ export class StrategyData {
     }
 }
 
-export abstract class Strategy {
+export class Strategy {
 
     static GetSpawn(data: StrategyData, room: Room, intel: Intel): StructureSpawn | undefined {
         return room
@@ -59,7 +59,8 @@ export abstract class Strategy {
                 const harvesterName = data.initialHarvesters[sourcePosIter][harvestPosIter]
                 if (harvesterName === null ||
                     Game.creeps[harvesterName] === undefined ||
-                    Memory.c[harvesterName].data.jobPosition !== intel.sourcePoss[sourcePosIter]) {
+                    CreepManager.GetCreepInitial(harvesterName).jobPosition !== intel.sourcePoss[sourcePosIter]) {
+
                     data.initialHarvesters[sourcePosIter][harvestPosIter] = null
                     harvestJobs.push([sourcePosIter, harvestPosIter])
                 }
@@ -78,8 +79,8 @@ export abstract class Strategy {
             const creep = idleCreeps.pop()
             if (creep) {
                 const job = harvestJobs[harvestJobsIter]
-                creep.SetMineJob(intel.sourcePoss[job[0]], intel.harvestPoss[job[0]][job[1]])
-                data.initialHarvesters[job[0]][job[1]] = creep.data.name
+                CreepInitial.SetMineJob(creep, intel.sourcePoss[job[0]], intel.harvestPoss[job[0]][job[1]])
+                data.initialHarvesters[job[0]][job[1]] = creep.name
             } else {
                 return true
             }
@@ -100,7 +101,7 @@ export abstract class Strategy {
             const creepName = Game.time.toString()
             const didSpawnCreep = spawn.spawnCreep(body, creepName)
             if (didSpawnCreep === OK) {
-                Memory.c[creepName] = new CreepInitial(new CreepInitialData(creepName, CreepType.INITIAL))
+                new CreepInitial(creepName)
                 const empire = Memory.empire as Empire
                 empire.creepCount += 1
             }

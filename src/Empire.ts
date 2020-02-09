@@ -21,7 +21,10 @@ export class Empire {
             throw Error("Waiting until simulation room is set up.")
         }
         const strategyData: StrategyData = new StrategyData(StrategyType.INITIAL_RCL_2, roomName)
-        Memory.c = {}
+        Memory.initialCreeps = []
+        Memory.haulerCreeps = []
+        Memory.initialCreepsIndex = {}
+        Memory.haulerCreepsIndex = {}
         Memory.strategy = [strategyData]
         Memory.intel = {[roomName]: new Intel(roomName)}
 

@@ -4,7 +4,13 @@
 //import { Strategy } from "strategies/Strategy"
 
 interface Memory {
-    c: { [creepName: string]: CreepBase }
+    initialCreeps: CreepInitial[]
+    haulerCreeps: CreepHauler[]
+    initialCreepsIndex: { [creepName: string]: number }
+    haulerCreepsIndex: { [creepName: string]: number }
+    //minerCreeps: CreepMiner[]
+    //builderCreeps: CreepBuilder[]
+    //refillerCreeps: CreepRefiller[]
     empire: Empire
     intel: { [roomName: string]: Intel }
     strategy: Strategy[]

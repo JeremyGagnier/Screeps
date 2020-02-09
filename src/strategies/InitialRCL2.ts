@@ -25,21 +25,20 @@ export class InitialRCL2 {
         const harvestJobs = Strategy.GetHarvestJobs(data, intel)
 
         const stillIdleCreeps: CreepInitial[] = []
-        let maybeCreep = data.idleCreeps.pop() as CreepInitial | undefined
-        while (maybeCreep) {
-            const creep = Game.creeps[maybeCreep.data.name]
-            if (maybeCreep.IsEmpty(creep)) {
-                stillIdleCreeps.push(maybeCreep)
+        let creep = data.idleCreeps.pop() as CreepInitial | undefined
+        while (creep) {
+            if (CreepInitial.IsEmpty(creep.creep)) {
+                stillIdleCreeps.push(creep)
             } else {
                 if (spawn && spawn.energy >= spawn.energyCapacity) {
                     if (room.controller) {
-                        maybeCreep.SetUpgradeJob(room.controller.pos.x + room.controller.pos.y * ROOM_SIZE)
+                        CreepInitial.SetUpgradeJob(creep, room.controller.pos.x + room.controller.pos.y * ROOM_SIZE)
                     }
                 } else if (spawn) {
-                    maybeCreep.SetHaulJob(spawn.pos.x + spawn.pos.y * ROOM_SIZE)
+                    CreepInitial.SetHaulJob(creep, spawn.pos.x + spawn.pos.y * ROOM_SIZE)
                 }
             }
-            maybeCreep = data.idleCreeps.pop() as CreepInitial | undefined
+            creep = data.idleCreeps.pop() as CreepInitial | undefined
         }
 
         const shouldSpawnCreep = Strategy.AssignHarvestJobs(data, intel, harvestJobs, stillIdleCreeps)
