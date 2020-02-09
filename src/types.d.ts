@@ -1,8 +1,5 @@
-//import { CreepBase } from 'creeps/CreepBase'
-//import { Empire } from "Empire"
-//import { Intel } from "Intel"
-//import { Strategy } from "strategies/Strategy"
-
+// IMPORTANT: Any structure saved to memory will not not retain its methods and references in the next loop. Do not
+//            store objects that require either of these in Memory without a well organized way to resolve them.
 interface Memory {
     initialCreeps: CreepInitial[]
     haulerCreeps: CreepHauler[]
@@ -17,12 +14,3 @@ interface Memory {
 }
 
 declare const Memory: Memory;
-
-function Sum(object: { [key: string]: number }): number {
-    let sum: number = 0
-    for (let key in object)
-    {
-        sum += object[key]
-    }
-    return sum
-}

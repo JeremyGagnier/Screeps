@@ -27,7 +27,7 @@ export class InitialRCL2 {
         const stillIdleCreeps: CreepInitial[] = []
         let creep = data.idleCreeps.pop() as CreepInitial | undefined
         while (creep) {
-            if (CreepInitial.IsEmpty(creep.creep)) {
+            if (CreepInitial.IsEmpty(CreepInitial.Creep(creep))) {
                 stillIdleCreeps.push(creep)
             } else {
                 if (spawn && spawn.energy >= spawn.energyCapacity) {

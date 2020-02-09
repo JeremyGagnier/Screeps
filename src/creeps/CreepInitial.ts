@@ -1,7 +1,8 @@
-import { ROOM_SIZE } from '../Constants'
 import { CreepBase } from './CreepBase'
-import { FiniteStateMachine } from '../utils/FiniteStateMachine'
 import { CreepManager } from './CreepManager'
+import { FiniteStateMachine } from '../utils/FiniteStateMachine'
+import { ROOM_SIZE, Sum } from '../Constants'
+import { StrategyData } from 'strategies/Strategy'
 import { Transition } from '../utils/Transition'
 
 enum InitialState {
@@ -42,8 +43,6 @@ export class CreepInitial extends CreepBase {
         new Transition(InitialState.BUILD, InitialState.IDLE, CreepInitial.FromBuildToIdle)
     ])
 
-    public creep: Creep = Game.creeps[this.name]
-
     constructor(
         public name: string,
         public targetPosition: number = -1,
@@ -55,8 +54,17 @@ export class CreepInitial extends CreepBase {
         CreepManager.AddCreep(this)
     }
 
+    // This is a bad solution.
+    static Creep(creep: CreepInitial): Creep {
+        return Game.creeps[creep.name]
+    }
+
     static Advance(creep: CreepInitial): void {
-        creep.creep = Game.creeps[creep.name]
+        // Return early if this creep hasn't spawned yet.
+        if (CreepInitial.Creep(creep) === undefined) {
+            return
+        }
+
         const previousState = creep.state
         const newState = CreepInitial.fsm.TryTransition(creep.state, creep)
         // Don't change the state if it was modified by a method called in TryTransition.
@@ -65,19 +73,31 @@ export class CreepInitial extends CreepBase {
         }
     }
 
+    static Idle(creep: CreepInitial) {
+        const strategiesLength = Memory.strategy.length
+        const roomName = CreepInitial.Creep(creep).room.name
+        for (let strategiesIter = 0; strategiesIter < strategiesLength; ++strategiesIter) {
+            const strategyData: StrategyData = Memory.strategy[strategiesIter]
+            if (strategyData.roomName === roomName) {
+                strategyData.idleCreeps.push(creep)
+                return
+            }
+        }
+    }
+
     static Move(creep: CreepInitial) {
-        if (creep.creep.fatigue <= 0) {
+        if (CreepInitial.Creep(creep).fatigue <= 0) {
             const targetX = creep.targetPosition % ROOM_SIZE
             const targetY = ~~(creep.targetPosition / ROOM_SIZE)
-            creep.creep.moveTo(targetX, targetY)
+            CreepInitial.Creep(creep).moveTo(targetX, targetY)
         }
     }
 
     static Mine(creep: CreepInitial) {
         const targetX = creep.targetPosition % ROOM_SIZE
         const targetY = ~~(creep.targetPosition / ROOM_SIZE)
-        const sources = creep.creep.room.lookForAt(LOOK_SOURCES, targetX, targetY)
-        if (sources.length === 0 || creep.creep.harvest(sources[0]) !== OK) {
+        const sources = CreepInitial.Creep(creep).room.lookForAt(LOOK_SOURCES, targetX, targetY)
+        if (sources.length === 0 || CreepInitial.Creep(creep).harvest(sources[0]) !== OK) {
             creep.state = InitialState.IDLE
         }
     }
@@ -85,7 +105,7 @@ export class CreepInitial extends CreepBase {
     static Transfer(creep: CreepInitial) {
         const targetX = creep.targetPosition % ROOM_SIZE
         const targetY = ~~(creep.targetPosition / ROOM_SIZE)
-        const targets = creep.creep.room.lookForAt(LOOK_STRUCTURES, targetX, targetY)
+        const targets = CreepInitial.Creep(creep).room.lookForAt(LOOK_STRUCTURES, targetX, targetY)
         for (let targetIter in targets) {
             let target = targets[targetIter]
             if (target instanceof StructureSpawn) {
@@ -123,7 +143,7 @@ export class CreepInitial extends CreepBase {
                 continue
             }
             // Otherwise transfer to the non full structure
-            if (creep.creep.transfer(target, RESOURCE_ENERGY) !== OK) {
+            if (CreepInitial.Creep(creep).transfer(target, RESOURCE_ENERGY) !== OK) {
                 creep.state = InitialState.IDLE
             }
             return
@@ -133,22 +153,22 @@ export class CreepInitial extends CreepBase {
     }
 
     static Die(creep: CreepInitial) {
-        creep.creep.suicide()
+        CreepInitial.Creep(creep).suicide()
     }
 
     static Build(creep: CreepInitial) {
         const targetX = creep.targetPosition % ROOM_SIZE
         const targetY = ~~(creep.targetPosition / ROOM_SIZE)
-        const targets = creep.creep.room.lookForAt(LOOK_CONSTRUCTION_SITES, targetX, targetY)
-        if (targets.length === 0 || creep.creep.build(targets[0]) !== OK) {
+        const targets = CreepInitial.Creep(creep).room.lookForAt(LOOK_CONSTRUCTION_SITES, targetX, targetY)
+        if (targets.length === 0 || CreepInitial.Creep(creep).build(targets[0]) !== OK) {
             creep.state = InitialState.IDLE
         }
     }
 
     static FromMoveToHarvest(creep: CreepInitial): boolean {
         const shouldTransition: boolean = creep.job === InitialJob.MINE &&
-            !CreepInitial.IsFull(creep.creep) &&
-            CreepInitial.DistanceToTarget(creep.creep, creep.targetPosition) <= 0
+            !CreepInitial.IsFull(CreepInitial.Creep(creep)) &&
+            CreepInitial.DistanceToTarget(CreepInitial.Creep(creep), creep.targetPosition) <= 0
         if (shouldTransition) {
             creep.targetPosition = creep.jobPosition
         }
@@ -157,30 +177,30 @@ export class CreepInitial extends CreepBase {
 
     static FromMoveToTransfer(creep: CreepInitial): boolean {
         const haulFinished = creep.job === InitialJob.HAUL &&
-            !CreepInitial.IsEmpty(creep.creep) &&
-            CreepInitial.DistanceToTarget(creep.creep, creep.targetPosition) <= 1
+            !CreepInitial.IsEmpty(CreepInitial.Creep(creep)) &&
+            CreepInitial.DistanceToTarget(CreepInitial.Creep(creep), creep.targetPosition) <= 1
         const upgrading = creep.job === InitialJob.UPGRADE &&
-            !CreepInitial.IsEmpty(creep.creep) &&
-            CreepInitial.DistanceToTarget(creep.creep, creep.targetPosition) <= 3
+            !CreepInitial.IsEmpty(CreepInitial.Creep(creep)) &&
+            CreepInitial.DistanceToTarget(CreepInitial.Creep(creep), creep.targetPosition) <= 3
         return haulFinished || upgrading
     }
 
     static FromMoveToBuild(creep: CreepInitial): boolean {
         return creep.job === InitialJob.BUILD &&
-            CreepInitial.DistanceToTarget(creep.creep, creep.targetPosition) <= 3
+            CreepInitial.DistanceToTarget(CreepInitial.Creep(creep), creep.targetPosition) <= 3
     }
 
     static FromMoveToDie(creep: CreepInitial): boolean {
         return creep.job === InitialJob.DIE &&
-            CreepInitial.DistanceToTarget(creep.creep, creep.targetPosition) === 0
+            CreepInitial.DistanceToTarget(CreepInitial.Creep(creep), creep.targetPosition) === 0
     }
 
     static FromTransferToIdle(creep: CreepInitial): boolean {
-        return CreepInitial.IsEmpty(creep.creep)
+        return CreepInitial.IsEmpty(CreepInitial.Creep(creep))
     }
 
     static FromMineToIdle(creep: CreepInitial): boolean {
-        let shouldTransition = CreepInitial.IsFull(creep.creep)
+        let shouldTransition = CreepInitial.IsFull(CreepInitial.Creep(creep))
         if (shouldTransition) {
             creep.jobPosition = -1
         }
@@ -188,7 +208,7 @@ export class CreepInitial extends CreepBase {
     }
 
     static FromBuildToIdle(creep: CreepInitial): boolean {
-        return CreepInitial.IsEmpty(creep.creep)
+        return CreepInitial.IsEmpty(CreepInitial.Creep(creep))
     }
 
     static SetMineJob(creep: CreepInitial, sourcePos: number, harvestPos: number) {
