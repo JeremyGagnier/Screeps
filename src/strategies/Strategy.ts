@@ -1,10 +1,10 @@
-import { CreepBase } from '../creeps/CreepBase';
-import { CreepManager } from '../creeps/CreepManager';
-import { CreepInitial } from '../creeps/CreepInitial';
-import { Empire } from '../Empire';
-import { ExtensionManager } from '../ExtensionManager';
-import { Intel } from '../Intel';
-import { ROOM_SIZE } from '../Constants';
+import { CreepBase } from '../creeps/CreepBase'
+import { CreepManager } from '../creeps/CreepManager'
+import { CreepInitial } from '../creeps/CreepInitial'
+import { Empire } from '../Empire'
+import { ExtensionManager } from '../ExtensionManager'
+import { Intel } from '../Intel'
+import { ROOM_SIZE } from '../Constants'
 
 export enum StrategyType {
     INITIAL_RCL_2,
@@ -20,6 +20,8 @@ export class Strategy {
     public extensionsOrientation: number = 0
     public idleCreeps: CreepBase[] = []
     public initialHarvesters: (string | null)[][] = []
+
+    public builtExtensionsIndex: number = 0
 
     constructor(public type: StrategyType, public roomName: string) {
         const room = Game.rooms[roomName]

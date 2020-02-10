@@ -1,7 +1,8 @@
-import { Strategy } from './Strategy';
-import { Intel } from 'Intel';
-import { CreepInitial } from '../creeps/CreepInitial';
-import { ROOM_SIZE } from '../Constants';
+import { CreepInitial } from '../creeps/CreepInitial'
+import { Initial5Extensions } from './Initial5Extensions'
+import { Intel } from '../Intel'
+import { ROOM_SIZE } from '../Constants'
+import { Strategy } from './Strategy'
 
 export class InitialRCL2 {
 
@@ -49,6 +50,14 @@ export class InitialRCL2 {
     }
 
     static FromInitialRcl2ToInitial5Extensions(strategy: Strategy): boolean {
+        const controller = Game.rooms[strategy.roomName].controller
+        if (controller) {
+            const shouldTransition = controller.level >= 2
+            if (shouldTransition) {
+                Initial5Extensions.Initialize(strategy)
+            }
+            return shouldTransition
+        }
         return false
     }
 }
