@@ -1,9 +1,9 @@
-import { CreepBase } from 'creeps/CreepBase';
-import { CreepManager } from 'creeps/CreepManager';
+import { CreepBase } from '../creeps/CreepBase';
+import { CreepManager } from '../creeps/CreepManager';
 import { CreepInitial } from '../creeps/CreepInitial';
-import { Empire } from 'Empire';
+import { Empire } from '../Empire';
 import { ExtensionManager } from '../ExtensionManager';
-import { Intel } from 'Intel';
+import { Intel } from '../Intel';
 import { ROOM_SIZE } from '../Constants';
 
 export enum StrategyType {
@@ -13,8 +13,7 @@ export enum StrategyType {
     CONTAINER_PER_SOURCE
 }
 
-export class StrategyData {
-
+export class Strategy {
     public spawnPos: number = 0
     public spawnOrientation: number = 0
     public extensionsPos: number = 0
@@ -40,17 +39,14 @@ export class StrategyData {
             ~~(this.extensionsPos / ROOM_SIZE),
             this.extensionsOrientation.toString() + "extensions")
     }
-}
 
-export class Strategy {
-
-    static GetSpawn(data: StrategyData, room: Room, intel: Intel): StructureSpawn | undefined {
+    static GetSpawn(strategy: Strategy, room: Room, intel: Intel): StructureSpawn | undefined {
         return room
-            .lookForAt(LOOK_STRUCTURES, data.spawnPos % ROOM_SIZE, ~~(data.spawnPos / ROOM_SIZE))
+            .lookForAt(LOOK_STRUCTURES, strategy.spawnPos % ROOM_SIZE, ~~(strategy.spawnPos / ROOM_SIZE))
             .find(x => x instanceof StructureSpawn) as StructureSpawn | undefined
     }
 
-    static GetHarvestJobs(data: StrategyData, intel: Intel): [number, number][] {
+    static GetHarvestJobs(data: Strategy, intel: Intel): [number, number][] {
         const harvestJobs: [number, number][] = []
         const sourcePossLength = intel.sourcePoss.length
         for (let sourcePosIter = 0; sourcePosIter < sourcePossLength; ++sourcePosIter) {
@@ -70,7 +66,7 @@ export class Strategy {
     }
 
     static AssignHarvestJobs(
-        data: StrategyData,
+        data: Strategy,
         intel: Intel,
         harvestJobs: [number, number][],
         idleCreeps: CreepInitial[]): boolean {

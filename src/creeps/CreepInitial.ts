@@ -2,7 +2,7 @@ import { CreepBase } from './CreepBase'
 import { CreepManager } from './CreepManager'
 import { FiniteStateMachine } from '../utils/FiniteStateMachine'
 import { ROOM_SIZE, Sum } from '../Constants'
-import { StrategyData } from 'strategies/Strategy'
+import { Strategy } from '../strategies/Strategy'
 import { Transition } from '../utils/Transition'
 
 enum InitialState {
@@ -43,13 +43,12 @@ export class CreepInitial extends CreepBase {
         new Transition(InitialState.BUILD, InitialState.IDLE, CreepInitial.FromBuildToIdle)
     ])
 
-    constructor(
-        public name: string,
-        public targetPosition: number = -1,
-        public jobPosition: number = -1,
-        public job: InitialJob = InitialJob.NONE,
-        public state: InitialState = InitialState.IDLE) {
+    public targetPosition: number = -1
+    public jobPosition: number = -1
+    public job: InitialJob = InitialJob.NONE
+    public state: InitialState = InitialState.IDLE
 
+    constructor(public name: string) {
         super(name)
         CreepManager.AddCreep(this)
     }
@@ -77,9 +76,9 @@ export class CreepInitial extends CreepBase {
         const strategiesLength = Memory.strategy.length
         const roomName = CreepInitial.Creep(creep).room.name
         for (let strategiesIter = 0; strategiesIter < strategiesLength; ++strategiesIter) {
-            const strategyData: StrategyData = Memory.strategy[strategiesIter]
-            if (strategyData.roomName === roomName) {
-                strategyData.idleCreeps.push(creep)
+            const strategy: Strategy = Memory.strategy[strategiesIter]
+            if (strategy.roomName === roomName) {
+                strategy.idleCreeps.push(creep)
                 return
             }
         }

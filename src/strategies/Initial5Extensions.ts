@@ -1,13 +1,13 @@
-import { StrategyData } from './Strategy';
+import { Strategy } from './Strategy';
 import { ExtensionManager } from 'ExtensionManager';
 
 export class Initial5Extensions {
-    static Initialize(data: StrategyData) {
+    static Initialize(strategy: Strategy) {
         ExtensionManager.PlaceExtensions(
-            Game.rooms[data.roomName],
+            Game.rooms[strategy.roomName],
             0,
             5,
-            data.extensionsPos,
-            data.extensionsOrientation)
+            strategy.extensionsPos,
+            strategy.extensionsOrientation)
     }
 }

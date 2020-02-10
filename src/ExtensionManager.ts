@@ -93,7 +93,7 @@ export class ExtensionManager {
         const positionsLength = ExtensionManager.POSITIONS.length
         for (let iter = 0; iter < positionsLength; ++iter) {
             const transformedPos = ExtensionManager.GetTransformedPosition(iter, pos, orientation)
-            const blockedPos = transformedPos[0] + transformedPos[1] * ROOM_SIZE - 6 * (1 + ROOM_SIZE)
+            const blockedPos = transformedPos[0] - 6 + (transformedPos[1] - 6) * (ROOM_SIZE - 12)
             if (blockedPos > 0 && blockedPositions[blockedPos]) {
                 return false
             }
@@ -101,7 +101,7 @@ export class ExtensionManager {
         const walkPositionsLength = ExtensionManager.WALK_POSITIONS.length
         for (let iter = 0; iter < walkPositionsLength; ++iter) {
             const transformedPos = ExtensionManager.GetWalkPosition(iter, pos, orientation)
-            const blockedPos = transformedPos[0] + transformedPos[1] * ROOM_SIZE - 6 * (1 + ROOM_SIZE)
+            const blockedPos = transformedPos[0] - 6 + (transformedPos[1] - 6) * (ROOM_SIZE - 12)
             if (blockedPos > 0 && blockedPositions[blockedPos]) {
                 return false
             }
@@ -128,9 +128,11 @@ export class ExtensionManager {
         const spawnBlocked = SpawnManager.GetBlockedPositions(spawnPos, spawnOrientation)
         const spawnBlockedLength = spawnBlocked.length
         for (let spawnBlockedIter = 0; spawnBlockedIter < spawnBlockedLength; ++spawnBlockedIter) {
-            const blockedPos = spawnBlocked[spawnBlockedIter] - 6 * (1 + ROOM_SIZE)
-            if (blockedPos >= 0) {
-                blockedPositions[blockedPos] = true
+            const blockedPos = spawnBlocked[spawnBlockedIter]
+            const y = ~~(blockedPos / ROOM_SIZE)
+            const blockedIndex = blockedPos - 6 * (2 * y + ROOM_SIZE - 11)
+            if (blockedIndex >= 0) {
+                blockedPositions[blockedIndex] = true
             }
         }
 
@@ -140,7 +142,7 @@ export class ExtensionManager {
         let numOfIterations = 0
         while (true) {
             const randomPos = [~~(Math.random() * (ROOM_SIZE - 12)) + 6, ~~(Math.random() * (ROOM_SIZE - 12)) + 6]
-            const checkPos = randomPos[0] + randomPos[1] * ROOM_SIZE - 6 * (1 + ROOM_SIZE)
+            const checkPos = randomPos[0] - 6 + (randomPos[1] - 6) * (ROOM_SIZE - 12)
             if (checkedPositions[checkPos]) {
                 continue
             }
@@ -184,6 +186,7 @@ export class ExtensionManager {
             // of all possible locations.
             if ((bestPos > 0 && numOfIterations > bestDistance * 16) ||
                 numOfIterations > (ROOM_SIZE - 12) * (ROOM_SIZE - 12) / 2) {
+                console.log("Found extension position after " + numOfIterations + " iterations.")
                 break
             }
             numOfIterations += 1

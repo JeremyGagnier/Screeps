@@ -1,5 +1,5 @@
 import { InitialRCL2 } from "strategies/InitialRCL2";
-import { StrategyType, StrategyData } from './strategies/Strategy';
+import { StrategyType, Strategy } from './strategies/Strategy';
 import { Intel } from "Intel";
 
 export enum EmpireState {
@@ -20,14 +20,14 @@ export class Empire {
         if (roomName === "sim" && Game.rooms[roomName].find(FIND_MY_SPAWNS).length === 0) {
             throw Error("Waiting until simulation room is set up.")
         }
-        const strategyData: StrategyData = new StrategyData(StrategyType.INITIAL_RCL_2, roomName)
+        const strategy: Strategy = new Strategy(StrategyType.INITIAL_RCL_2, roomName)
         Memory.initialCreeps = []
         Memory.haulerCreeps = []
         Memory.initialCreepsIndex = {}
         Memory.haulerCreepsIndex = {}
-        Memory.strategy = [strategyData]
+        Memory.strategy = [strategy]
         Memory.intel = {[roomName]: new Intel(roomName)}
 
-        InitialRCL2.Initialize(strategyData)
+        InitialRCL2.Initialize(strategy)
     }
 }

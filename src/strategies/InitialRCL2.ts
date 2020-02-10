@@ -1,12 +1,12 @@
-import { Strategy, StrategyData } from './Strategy';
+import { Strategy } from './Strategy';
 import { Intel } from 'Intel';
 import { CreepInitial } from '../creeps/CreepInitial';
 import { ROOM_SIZE } from '../Constants';
 
 export class InitialRCL2 {
 
-    static Initialize(data: StrategyData) {
-        const intel: Intel = Memory.intel[data.roomName]
+    static Initialize(strategy: Strategy) {
+        const intel: Intel = Memory.intel[strategy.roomName]
         const sourcePossLength = intel.sourcePoss.length
         for (let sourcePosIter = 0; sourcePosIter < sourcePossLength; ++sourcePosIter) {
             const harvestPossLength = intel.harvestPoss[sourcePosIter].length
@@ -14,18 +14,18 @@ export class InitialRCL2 {
             for (let harvestPosIter = 0; harvestPosIter < harvestPossLength; ++harvestPosIter) {
                 nulls.push(null)
             }
-            data.initialHarvesters.push(nulls)
+            strategy.initialHarvesters.push(nulls)
         }
     }
 
-    static Advance(data: StrategyData): void {
-        const room: Room = Game.rooms[data.roomName]
-        const intel: Intel = Memory.intel[data.roomName]
-        const spawn = Strategy.GetSpawn(data, room, intel)
-        const harvestJobs = Strategy.GetHarvestJobs(data, intel)
+    static Advance(strategy: Strategy): void {
+        const room: Room = Game.rooms[strategy.roomName]
+        const intel: Intel = Memory.intel[strategy.roomName]
+        const spawn = Strategy.GetSpawn(strategy, room, intel)
+        const harvestJobs = Strategy.GetHarvestJobs(strategy, intel)
 
         const stillIdleCreeps: CreepInitial[] = []
-        let creep = data.idleCreeps.pop() as CreepInitial | undefined
+        let creep = strategy.idleCreeps.pop() as CreepInitial | undefined
         while (creep) {
             if (CreepInitial.IsEmpty(CreepInitial.Creep(creep))) {
                 stillIdleCreeps.push(creep)
@@ -38,17 +38,17 @@ export class InitialRCL2 {
                     CreepInitial.SetHaulJob(creep, spawn.pos.x + spawn.pos.y * ROOM_SIZE)
                 }
             }
-            creep = data.idleCreeps.pop() as CreepInitial | undefined
+            creep = strategy.idleCreeps.pop() as CreepInitial | undefined
         }
 
-        const shouldSpawnCreep = Strategy.AssignHarvestJobs(data, intel, harvestJobs, stillIdleCreeps)
+        const shouldSpawnCreep = Strategy.AssignHarvestJobs(strategy, intel, harvestJobs, stillIdleCreeps)
         if (spawn) {
             const creepsCount = Object.keys(Game.creeps).length
             Strategy.MaybeSpawnInitialCreep(shouldSpawnCreep, creepsCount, spawn)
         }
     }
 
-    static FromInitialRcl2ToInitial5Extensions(data: StrategyData): boolean {
+    static FromInitialRcl2ToInitial5Extensions(strategy: Strategy): boolean {
         return false
     }
 }
