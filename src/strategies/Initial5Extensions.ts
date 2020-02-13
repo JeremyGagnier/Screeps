@@ -1,5 +1,6 @@
 import { CreepInitial } from '../creeps/CreepInitial'
 import { ExtensionManager } from '../ExtensionManager'
+import { FirstContainer } from './FirstContainer'
 import { Intel } from '../Intel'
 import { ROOM_SIZE } from '../Constants'
 import { Strategy } from './Strategy'
@@ -32,13 +33,18 @@ export class Initial5Extensions {
                         strategy.extensionsPos,
                         strategy.extensionsOrientation)
                     // TODO: Use more robust lookForAt
-                    const extension = room.lookForAt(LOOK_CONSTRUCTION_SITES, extensionsPos[0], extensionsPos[1])[0]
+                    const extension: ConstructionSite | null = room.lookForAt(
+                        LOOK_CONSTRUCTION_SITES,
+                        extensionsPos[0],
+                        extensionsPos[1])[0]
                     if (extension) {
                         CreepInitial.SetBuildJob(creep, extension.pos.x + ROOM_SIZE * extension.pos.y)
                     } else {
                         strategy.builtExtensionsIndex += 1
                         if (room.controller) {
-                            CreepInitial.SetHaulJob(creep, room.controller.pos.x + ROOM_SIZE * room.controller.pos.y)
+                            CreepInitial.SetUpgradeJob(
+                                creep,
+                                room.controller.pos.x + ROOM_SIZE * room.controller.pos.y)
                         } else {
                             console.log("Somehow this room (" + room.name + ") has no controller!")
                         }
@@ -60,6 +66,10 @@ export class Initial5Extensions {
     }
 
     static FromInitial5ExtensionsToFirstContainer(strategy: Strategy): boolean {
-        return false
+        const shouldTransition = strategy.builtExtensionsIndex >= 5
+        if (shouldTransition) {
+            FirstContainer.Initialize(strategy)
+        }
+        return shouldTransition
     }
 }

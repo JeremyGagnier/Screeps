@@ -39,6 +39,8 @@ export class SpawnManager {
             case 3:
                 pos -= 1
                 break
+            default:
+                throw new Error()
         }
         return [
             pos - 1 - ROOM_SIZE,
@@ -51,5 +53,15 @@ export class SpawnManager {
             pos + ROOM_SIZE,
             pos + 1 + ROOM_SIZE
         ]
+    }
+
+    public static GetLinkPosition(pos: number, orientation: number): number {
+        switch (orientation) {
+            case 0: return pos + 1
+            case 1: return pos - ROOM_SIZE
+            case 2: return pos - 1
+            case 3: return pos + ROOM_SIZE
+            default: throw new Error()
+        }
     }
 }

@@ -75,6 +75,7 @@ export class CreepInitial extends CreepBase {
     static Idle(creep: CreepInitial) {
         const strategiesLength = Memory.strategy.length
         const roomName = CreepInitial.Creep(creep).room.name
+        CreepInitial.Creep(creep).move([TOP, LEFT, BOTTOM, RIGHT][Game.time % 4])
         for (let strategiesIter = 0; strategiesIter < strategiesLength; ++strategiesIter) {
             const strategy: Strategy = Memory.strategy[strategiesIter]
             if (strategy.roomName === roomName) {

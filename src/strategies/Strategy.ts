@@ -30,7 +30,7 @@ export class Strategy {
             throw new Error("No spawns found when trying to build strategy data")
         }
         const spawn = spawns[0]
-        this.spawnOrientation = parseInt(spawn.name.charAt(0))
+        this.spawnOrientation = parseInt(spawn.name.charAt(0)) || 0
         this.spawnPos = spawn.pos.x + spawn.pos.y * ROOM_SIZE
 
         const extensionsPlacement = ExtensionManager.GetExtensionsPlacement(room, this.spawnPos, this.spawnOrientation)
@@ -55,6 +55,9 @@ export class Strategy {
             const harvestPossLength = intel.harvestPoss[sourcePosIter].length
             for (let harvestPosIter = 0; harvestPosIter < harvestPossLength; ++harvestPosIter) {
                 const harvesterName = data.initialHarvesters[sourcePosIter][harvestPosIter]
+                if (harvesterName !== null && Game.creeps[harvesterName] !== undefined && CreepManager.GetCreepInitial(harvesterName) === undefined) {
+                    console.log(harvesterName)
+                }
                 if (harvesterName === null ||
                     Game.creeps[harvesterName] === undefined ||
                     CreepManager.GetCreepInitial(harvesterName).jobPosition !== intel.sourcePoss[sourcePosIter]) {

@@ -1,4 +1,5 @@
 import { FiniteStateMachine } from '../utils/FiniteStateMachine'
+import { FirstContainer } from './FirstContainer'
 import { Initial5Extensions } from './Initial5Extensions'
 import { InitialRCL2 } from './InitialRCL2'
 import { Intel } from '../Intel'
@@ -12,7 +13,8 @@ export class StrategyManager {
         StrategyType,
         [
             [StrategyType.INITIAL_RCL_2, InitialRCL2.Advance],
-            [StrategyType.INITIAL_5_EXTENSIONS, Initial5Extensions.Advance]
+            [StrategyType.INITIAL_5_EXTENSIONS, Initial5Extensions.Advance],
+            [StrategyType.FIRST_CONTAINER, FirstContainer.Advance]
         ],
         [
             new Transition(

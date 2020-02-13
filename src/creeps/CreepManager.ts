@@ -4,25 +4,6 @@ import { CreepInitial } from './CreepInitial'
 
 export class CreepManager {
 
-    static CleanCreepArray(
-        creepNames: string[],
-        creepArray: CreepBase[],
-        creepIndex: { [name: string]: number }): void {
-
-        const initialCreepsLength = creepArray.length
-        let deletedCount: number = 0;
-        for (let creepIter = 0; creepIter < initialCreepsLength; ++creepIter) {
-            let creep: CreepBase = creepArray[creepIter]
-            if (creepNames.includes(creep.name) === undefined) {
-                deletedCount += 1
-                delete creepIndex[creep.name]
-            } else {
-                Memory.initialCreeps[creepIter - deletedCount] = creep
-            }
-        }
-        Memory.initialCreeps.length -= deletedCount
-    }
-
     static AddCreep(creep: CreepBase): void {
         if (creep instanceof CreepInitial) {
             const newLength: number = Memory.initialCreeps.push(creep)
@@ -57,12 +38,35 @@ export class CreepManager {
     static Advance(): void {
         const creepNames: string[] = Object.keys(Game.creeps)
 
-        CreepManager.CleanCreepArray(creepNames, Memory.initialCreeps, Memory.initialCreepsIndex)
-        CreepManager.CleanCreepArray(creepNames, Memory.haulerCreeps, Memory.haulerCreepsIndex)
-
+        // Initial Creeps
         const initialCreepsLength = Memory.initialCreeps.length
-        for (let initialCreepsIter = 0; initialCreepsIter < initialCreepsLength; ++initialCreepsIter) {
-            CreepInitial.Advance(Memory.initialCreeps[initialCreepsIter])
+        let deletedCount: number = 0;
+        for (let creepIter = 0; creepIter < initialCreepsLength; ++creepIter) {
+            let creep = Memory.initialCreeps[creepIter]
+            if (creepNames.includes(creep.name)) {
+                Memory.initialCreeps[creepIter - deletedCount] = creep
+                Memory.initialCreepsIndex[creep.name] -= deletedCount
+                CreepInitial.Advance(creep)
+            } else {
+                deletedCount += 1
+                delete Memory.initialCreepsIndex[creep.name]
+            }
         }
+        Memory.initialCreeps.length -= deletedCount
+
+        // Hauler Creeps
+        const haulerCreepsLength = Memory.haulerCreeps.length
+        deletedCount = 0;
+        for (let creepIter = 0; creepIter < haulerCreepsLength; ++creepIter) {
+            let creep = Memory.haulerCreeps[creepIter]
+            if (creepNames.includes(creep.name)) {
+                Memory.haulerCreeps[creepIter - deletedCount] = creep
+                CreepHauler.Advance(creep)
+            } else {
+                deletedCount += 1
+                delete Memory.haulerCreepsIndex[creep.name]
+            }
+        }
+        Memory.haulerCreeps.length -= deletedCount
     }
 }
