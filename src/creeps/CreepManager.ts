@@ -49,6 +49,7 @@ export class CreepManager {
                 CreepInitial.Advance(creep)
             } else {
                 deletedCount += 1
+                delete Memory.creeps[creep.name]
                 delete Memory.initialCreepsIndex[creep.name]
             }
         }
@@ -64,6 +65,7 @@ export class CreepManager {
                 CreepHauler.Advance(creep)
             } else {
                 deletedCount += 1
+                delete Memory.creeps[creep.name]
                 delete Memory.haulerCreepsIndex[creep.name]
             }
         }

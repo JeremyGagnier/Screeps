@@ -42,7 +42,7 @@ export class Strategy {
             this.extensionsOrientation.toString() + "extensions")
     }
 
-    static GetSpawn(strategy: Strategy, room: Room, intel: Intel): StructureSpawn | undefined {
+    static GetSpawn(strategy: Strategy, room: Room): StructureSpawn | undefined {
         return room
             .lookForAt(LOOK_STRUCTURES, strategy.spawnPos % ROOM_SIZE, ~~(strategy.spawnPos / ROOM_SIZE))
             .find(x => x instanceof StructureSpawn) as StructureSpawn | undefined
@@ -106,6 +106,39 @@ export class Strategy {
                 const empire = Memory.empire as Empire
                 empire.creepCount += 1
             }
+        }
+    }
+
+    static Advance(
+        strategy: Strategy,
+        whenSpawnFull: (creep: CreepInitial, room: Room, strategy: Strategy) => void): void {
+        
+        const room: Room = Game.rooms[strategy.roomName]
+        const intel: Intel = Memory.intel[strategy.roomName]
+        const spawn = this.GetSpawn(strategy, room)
+        const harvestJobs = this.GetHarvestJobs(strategy, intel)
+
+        const stillIdleCreeps: CreepInitial[] = []
+        let creep = strategy.idleCreeps.pop() as CreepInitial | undefined
+        while (creep) {
+            if (CreepInitial.IsEmpty(CreepInitial.Creep(creep))) {
+                stillIdleCreeps.push(creep)
+            } else {
+                if (spawn && spawn.energy >= spawn.energyCapacity) {
+                    whenSpawnFull(creep, room, strategy)
+                } else if (spawn) {
+                    CreepInitial.SetHaulJob(creep, spawn.pos.x + spawn.pos.y * ROOM_SIZE)
+                } else {
+                    console.log("Somehow this room (" + room.name + ") has no spawn!")
+                }
+            }
+            creep = strategy.idleCreeps.pop() as CreepInitial | undefined
+        }
+
+        const shouldSpawnCreep = this.AssignHarvestJobs(strategy, intel, harvestJobs, stillIdleCreeps)
+        if (spawn) {
+            const creepsCount = Object.keys(Game.creeps).length
+            this.MaybeSpawnInitialCreep(shouldSpawnCreep, creepsCount, spawn)
         }
     }
 }
