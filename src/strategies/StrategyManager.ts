@@ -1,3 +1,4 @@
+import { ContainerPerSource } from './ContainerPerSource'
 import { FiniteStateMachine } from '../utils/FiniteStateMachine'
 import { FirstContainer } from './FirstContainer'
 import { Initial5Extensions } from './Initial5Extensions'
@@ -14,7 +15,8 @@ export class StrategyManager {
         [
             [StrategyType.INITIAL_RCL_2, InitialRCL2.Advance],
             [StrategyType.INITIAL_5_EXTENSIONS, Initial5Extensions.Advance],
-            [StrategyType.FIRST_CONTAINER, FirstContainer.Advance]
+            [StrategyType.FIRST_CONTAINER, FirstContainer.Advance],
+            [StrategyType.CONTAINER_PER_SOURCE, ContainerPerSource.Advance]
         ],
         [
             new Transition(
@@ -24,7 +26,11 @@ export class StrategyManager {
             new Transition(
                 StrategyType.INITIAL_5_EXTENSIONS,
                 StrategyType.FIRST_CONTAINER,
-                Initial5Extensions.FromInitial5ExtensionsToFirstContainer)
+                Initial5Extensions.FromInitial5ExtensionsToFirstContainer),
+            new Transition(
+                StrategyType.FIRST_CONTAINER,
+                StrategyType.CONTAINER_PER_SOURCE,
+                FirstContainer.FromFirstContainerToContainerPerSource)
         ])
 
     static Advance() {

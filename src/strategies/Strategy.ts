@@ -23,6 +23,8 @@ export class Strategy {
 
     public builtExtensionsIndex: number = 0
 
+    public finishedContainers: number[] = []
+
     constructor(public type: StrategyType, public roomName: string) {
         const room = Game.rooms[roomName]
         const spawns = room.find(FIND_MY_SPAWNS)
@@ -48,21 +50,18 @@ export class Strategy {
             .find(x => x instanceof StructureSpawn) as StructureSpawn | undefined
     }
 
-    static GetHarvestJobs(data: Strategy, intel: Intel): [number, number][] {
+    static GetHarvestJobs(strategy: Strategy, intel: Intel): [number, number][] {
         const harvestJobs: [number, number][] = []
         const sourcePossLength = intel.sourcePoss.length
         for (let sourcePosIter = 0; sourcePosIter < sourcePossLength; ++sourcePosIter) {
             const harvestPossLength = intel.harvestPoss[sourcePosIter].length
             for (let harvestPosIter = 0; harvestPosIter < harvestPossLength; ++harvestPosIter) {
-                const harvesterName = data.initialHarvesters[sourcePosIter][harvestPosIter]
-                if (harvesterName !== null && Game.creeps[harvesterName] !== undefined && CreepManager.GetCreepInitial(harvesterName) === undefined) {
-                    console.log(harvesterName)
-                }
+                const harvesterName = strategy.initialHarvesters[sourcePosIter][harvestPosIter]
                 if (harvesterName === null ||
                     Game.creeps[harvesterName] === undefined ||
                     CreepManager.GetCreepInitial(harvesterName).jobPosition !== intel.sourcePoss[sourcePosIter]) {
 
-                    data.initialHarvesters[sourcePosIter][harvestPosIter] = null
+                    strategy.initialHarvesters[sourcePosIter][harvestPosIter] = null
                     harvestJobs.push([sourcePosIter, harvestPosIter])
                 }
             }
@@ -71,7 +70,7 @@ export class Strategy {
     }
 
     static AssignHarvestJobs(
-        data: Strategy,
+        strategy: Strategy,
         intel: Intel,
         harvestJobs: [number, number][],
         idleCreeps: CreepInitial[]): boolean {
@@ -81,7 +80,7 @@ export class Strategy {
             if (creep) {
                 const job = harvestJobs[harvestJobsIter]
                 CreepInitial.SetMineJob(creep, intel.sourcePoss[job[0]], intel.harvestPoss[job[0]][job[1]])
-                data.initialHarvesters[job[0]][job[1]] = creep.name
+                strategy.initialHarvesters[job[0]][job[1]] = creep.name
             } else {
                 return true
             }
@@ -115,8 +114,8 @@ export class Strategy {
         
         const room: Room = Game.rooms[strategy.roomName]
         const intel: Intel = Memory.intel[strategy.roomName]
-        const spawn = this.GetSpawn(strategy, room)
-        const harvestJobs = this.GetHarvestJobs(strategy, intel)
+        const spawn = Strategy.GetSpawn(strategy, room)
+        const harvestJobs = Strategy.GetHarvestJobs(strategy, intel)
 
         const stillIdleCreeps: CreepInitial[] = []
         let creep = strategy.idleCreeps.pop() as CreepInitial | undefined
@@ -135,10 +134,10 @@ export class Strategy {
             creep = strategy.idleCreeps.pop() as CreepInitial | undefined
         }
 
-        const shouldSpawnCreep = this.AssignHarvestJobs(strategy, intel, harvestJobs, stillIdleCreeps)
+        const shouldSpawnCreep = Strategy.AssignHarvestJobs(strategy, intel, harvestJobs, stillIdleCreeps)
         if (spawn) {
             const creepsCount = Object.keys(Game.creeps).length
-            this.MaybeSpawnInitialCreep(shouldSpawnCreep, creepsCount, spawn)
+            Strategy.MaybeSpawnInitialCreep(shouldSpawnCreep, creepsCount, spawn)
         }
     }
 }

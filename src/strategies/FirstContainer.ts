@@ -1,3 +1,4 @@
+import { ContainerPerSource } from './ContainerPerSource'
 import { CreepInitial } from '../creeps/CreepInitial'
 import { ROOM_SIZE } from '../Constants'
 import { Strategy } from './Strategy'
@@ -36,6 +37,19 @@ export class FirstContainer {
     }
 
     static Advance(strategy: Strategy): void {
-        Strategy.Advance(strategy, this.WhenSpawnFull)
+        Strategy.Advance(strategy, FirstContainer.WhenSpawnFull)
+    }
+
+    static FromFirstContainerToContainerPerSource(strategy: Strategy): boolean {
+        const room = Game.rooms[strategy.roomName]
+        const containerPos = SpawnManager.GetLinkPosition(strategy.spawnPos, strategy.spawnOrientation)
+        const shouldTransition = room.lookForAt(
+            LOOK_STRUCTURES,
+            containerPos % ROOM_SIZE,
+            ~~(containerPos / ROOM_SIZE))[0] instanceof StructureContainer
+        if (shouldTransition) {
+            ContainerPerSource.Initialize(strategy)
+        }
+        return shouldTransition
     }
 }

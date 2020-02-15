@@ -5,7 +5,7 @@ import { ROOM_SIZE, Sum } from '../Constants'
 import { Strategy } from '../strategies/Strategy'
 import { Transition } from '../utils/Transition'
 
-enum InitialState {
+export enum InitialState {
     IDLE,
     MOVE,
     MINE,

@@ -28,7 +28,7 @@ export class InitialRCL2 {
     }
 
     static Advance(strategy: Strategy): void {
-        Strategy.Advance(strategy, this.WhenSpawnFull)
+        Strategy.Advance(strategy, InitialRCL2.WhenSpawnFull)
     }
 
     static FromInitialRcl2ToInitial5Extensions(strategy: Strategy): boolean {

@@ -37,7 +37,7 @@ export class Initial5Extensions {
     }
 
     static Advance(strategy: Strategy): void {
-        Strategy.Advance(strategy, this.WhenSpawnFull)
+        Strategy.Advance(strategy, Initial5Extensions.WhenSpawnFull)
     }
 
     static FromInitial5ExtensionsToFirstContainer(strategy: Strategy): boolean {
