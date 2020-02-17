@@ -18,7 +18,7 @@ export class Strategy {
     public spawnOrientation: number = 0
     public extensionsPos: number = 0
     public extensionsOrientation: number = 0
-    public idleCreeps: CreepBase[] = []
+    public idleCreeps: CreepInitial[] = []
     public initialHarvesters: (string | null)[][] = []
 
     public builtExtensionsIndex: number = 0
@@ -120,7 +120,7 @@ export class Strategy {
         const stillIdleCreeps: CreepInitial[] = []
         let creep = strategy.idleCreeps.pop() as CreepInitial | undefined
         while (creep) {
-            if (CreepInitial.IsEmpty(CreepInitial.Creep(creep))) {
+            if (CreepInitial.IsEmpty(Game.creeps[creep.name])) {
                 stillIdleCreeps.push(creep)
             } else {
                 if (spawn && spawn.energy >= spawn.energyCapacity) {
