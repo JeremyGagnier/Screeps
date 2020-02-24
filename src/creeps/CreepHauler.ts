@@ -17,7 +17,7 @@ export class CreepHauler extends PathWalker {
         const room: Room = Game.rooms[creep.roomName]
         const intel: Intel = Memory.intel[creep.roomName]
         if (gameCreep.fatigue <= 0) {
-            const path: [number, number][] = intel.sourcePath[creep.sourceIndex]
+            const path: number[][] = intel.sourcePaths[creep.sourceIndex]
             if (creep.forward) {
                 const pathDest = path[path.length - 2]
                 if (gameCreep.pos.x === pathDest[0] && gameCreep.pos.y === pathDest[1]) {

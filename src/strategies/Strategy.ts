@@ -14,10 +14,6 @@ export enum StrategyType {
 }
 
 export class Strategy {
-    public spawnPos: number = 0
-    public spawnOrientation: number = 0
-    public extensionsPos: number = 0
-    public extensionsOrientation: number = 0
     public idleCreeps: CreepInitial[] = []
     public initialHarvesters: (string | null)[][] = []
 
@@ -25,28 +21,11 @@ export class Strategy {
 
     public finishedContainers: number[] = []
 
-    constructor(public type: StrategyType, public roomName: string) {
-        const room = Game.rooms[roomName]
-        const spawns = room.find(FIND_MY_SPAWNS)
-        if (spawns.length === 0) {
-            throw new Error("No spawns found when trying to build strategy data")
-        }
-        const spawn = spawns[0]
-        this.spawnOrientation = parseInt(spawn.name.charAt(0)) || 0
-        this.spawnPos = spawn.pos.x + spawn.pos.y * ROOM_SIZE
+    constructor(public type: StrategyType, public roomName: string) {}
 
-        const extensionsPlacement = ExtensionManager.GetExtensionsPlacement(room, this.spawnPos, this.spawnOrientation)
-        this.extensionsPos = extensionsPlacement[0]
-        this.extensionsOrientation = extensionsPlacement[1]
-        room.createFlag(
-            this.extensionsPos % ROOM_SIZE,
-            ~~(this.extensionsPos / ROOM_SIZE),
-            this.extensionsOrientation.toString() + "extensions")
-    }
-
-    static GetSpawn(strategy: Strategy, room: Room): StructureSpawn | undefined {
+    static GetSpawn(intel: Intel, room: Room): StructureSpawn | undefined {
         return room
-            .lookForAt(LOOK_STRUCTURES, strategy.spawnPos % ROOM_SIZE, ~~(strategy.spawnPos / ROOM_SIZE))
+            .lookForAt(LOOK_STRUCTURES, intel.spawnPos % ROOM_SIZE, ~~(intel.spawnPos / ROOM_SIZE))
             .find(x => x instanceof StructureSpawn) as StructureSpawn | undefined
     }
 
@@ -114,7 +93,7 @@ export class Strategy {
         
         const room: Room = Game.rooms[strategy.roomName]
         const intel: Intel = Memory.intel[strategy.roomName]
-        const spawn = Strategy.GetSpawn(strategy, room)
+        const spawn = Strategy.GetSpawn(intel, room)
         const harvestJobs = Strategy.GetHarvestJobs(strategy, intel)
 
         const stillIdleCreeps: CreepInitial[] = []
